@@ -1,0 +1,99 @@
+﻿@page "/AboutUs"
+
+<Animate Animation="BlazorAnimate.Animations.FadeDown" Duration="TimeSpan.FromSeconds(1.2)" Delay="TimeSpan.FromSeconds(1.2)"> 
+<div class="about-heading">
+    <h2>O nas</h2>
+    <p>
+        Witaj w świecie, gdzie zdrowe nawyki i kontrola wagi stają się łatwiejsze i bardziej intuicyjne niż kiedykolwiek.
+        Nasza aplikacja to Twój osobisty przewodnik i motywator w dążeniu do zdrowszej wersji siebie. Skonstruowana z
+        myślą o Tobie, aplikacja oferuje narzędzia i wsparcie, dzięki którym zdrowe odżywianie, aktywność fizyczna
+        i dbałość o własne samopoczucie stają się naturalną częścią Twojego codziennego życia. Dzięki naszym
+        funkcjom, które oferuje aplikacja jesteśmy w stanie pomóc osobom zagubionym, które nie do końca wiedzą w jaki sposób 
+        zadbać o siebie.
+    </p>
+</div>
+</Animate>
+<div class="about-containter">
+    <Animate Animation="BlazorAnimate.Animations.FadeUp" Anchor="#section1" AnchorPlacement="Anchor.BottomTop" Duration="TimeSpan.FromSeconds(1.2)" Easing="Easings.EaseInOutBack" Once="false" Mirror="true">
+    <section class="about" id="section1">
+        <div class="about-image">
+            <img alt="image" src="css/Photos/calculator.jpg" />
+        </div>
+        <div class="about-content">
+            <h3>Kalkulator BMI</h3>
+            <p>
+                Kalkulator BMI pozwala obliczyć twój wskaźnik ciała, który pozowli określić w jakim stanie znajduje się twój organizm.
+                Również ta funkcja pozwala na wpisanie policzonych rezultatów BMI do bazy. Przez co możliwe jest ich monitorowanie za
+                pomocą wykresu. Każdy organizm jest inny! Podane przez kalkulator kalorii wartości mają charakter
+                orientacyjny i pomocniczy.
+            </p>
+        </div>
+    </section>
+    </Animate>
+    <Animate Animation="BlazorAnimate.Animations.FadeUp" Anchor="#section2" AnchorPlacement="Anchor.BottomTop" Duration="TimeSpan.FromSeconds(1.2)" Easing="Easings.EaseInOutBack" Once="false" Mirror="true">
+    <section class="about" id="section2">
+        <div class="about-image">
+            <img alt="image" src="css/Photos/weight-loss.jpg" />
+        </div>
+        <div class="about-content">
+            <h3>Twoja Waga</h3>
+            <p>
+                Ta funkcja pozwala najprościej jak to możliwe na ciągłe monitorowanie zmian twojej wagi.
+                Również ta funkcja pozwala na wpisanie wagi do bazy przez co w przejrzysty sposób cała historia jest wyświetalna na wykresie. 
+                To narzędzie posiada również tabele, gdzie wagi są przez program do siebie porównywane, by lepiej widzieć te różnice.
+            </p>
+        </div>
+    </section>
+    </Animate>
+    <Animate Animation="BlazorAnimate.Animations.FadeUp" Anchor="#section3" AnchorPlacement="Anchor.BottomTop" Duration="TimeSpan.FromSeconds(1.2)" Easing="Easings.EaseInOutBack" Once="false" Mirror="true">
+    <section class="about" id="section3">
+        <div class="about-image">
+            <img alt="image" src="css/Photos/calorie.jpg" />
+        </div>
+        <div class="about-content">
+            <h3>Kalkulator Kalorii</h3>
+            <p>
+                Kalkulator kalorii pozwala użytkownikom na szybkie i łatwe obliczenie dziennej potrzeby kalorycznej, 
+                dostosowanej do ich indywidualnych celów, takich jak utrata, utrzymanie lub przybranie na wadze. Dzięki naszej bazie
+                użytwkonik jest w stanie wybrać daną żywność podać jej wage, a obliczone kalorie wraz z szczegółowymi danymi dotyczących
+                danego produktu zostaną wyświetlone na wykresie. Każdy organizm jest inny! Podane przez kalkulator kalorii wartości mają charakter 
+                orientacyjny i pomocniczy.
+            </p>
+        </div>
+    </section>
+    </Animate>
+    <Animate Animation="BlazorAnimate.Animations.FadeUp" Anchor="#section4" AnchorPlacement="Anchor.BottomTop" Duration="TimeSpan.FromSeconds(1.2)" Easing="Easings.EaseInOutBack" Once="false" Mirror="true">
+    <section class="about" id="section4">
+        <div class="about-image">
+            <img alt="image" src="css/Photos/kettle-bell.jpg" />
+        </div>
+        <div class="about-content">
+            <h3>Ćwiczenia</h3>
+            <p>
+                Sekcja ćwiczeń oferuje zestawy treningowe dopasowane do różnych poziomów zaawansowania i celów użytkowników czyli
+                utracie wagi. Każdy zestaw ćwiczeń zawiera instrukcje wykonania. Wystarczy wykonać ankiete składającą się z kilkunastu
+                pytań, a nasz algorytm pozwoli dopasować pod ciebie trening.
+            </p>
+        </div>
+    </section>
+    </Animate>
+    <Animate Animation="BlazorAnimate.Animations.FadeUp" Anchor="#section5" AnchorPlacement="Anchor.BottomTop" Duration="TimeSpan.FromSeconds(1.2)" Easing="Easings.EaseInOutBack" Once="false" Mirror="true">
+    <section class="about" id="section5">
+        <div class="about-image">
+            <img alt="image" src="css/Photos/diet.jpg" />
+        </div>
+        <div class="about-content">
+            <h3>Dieta</h3>
+            <p>
+                Funkcja diety pomaga w planowaniu posiłków zgodnie z zalecanym spożyciem kalorii, zapewniając użytkownikom zbilansowane i zdrowe menu na każdy dzień. 
+                Oferuje przepisy kulinarne dostosowane do preferencji smakowych, alergii pokarmowych oraz celów dietetycznych. W tym przypadku
+                również wystarczy wypełnić ankietę, dzięki której kolejny algorytm stworzy Tobie zestaw posiłków na cały tydzień.  
+            </p>
+        </div>
+    </section>
+    </Animate>
+</div>
+
+@code {
+
+}

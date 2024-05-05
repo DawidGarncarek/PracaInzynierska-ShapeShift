@@ -1,0 +1,292 @@
+﻿@page "/Diet"
+@using BlazorServerApp.Data
+@using BlazorServerAppDB.Data.Diet
+@using System.ComponentModel.DataAnnotations
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject DietService DietService
+@inject IJSRuntime JSRuntime;
+
+<div class="body-diet">
+    @if (!showResults)
+    {
+        <h3 class="text-calculator">Ankieta do diety</h3>
+        @if (questionDiet == null)
+        {
+            <p><em>Ładowanie pytań...</em></p>
+        }
+        else
+        {
+            foreach (var question in questionDiet)
+            {
+                <div class="question-diet-container">
+                    <p>@question.QuestionText</p>
+                    @if (question.Category.Contains("Calories"))
+                    {
+                        <input type="number" @bind="caloricRequirement" />
+                    }
+                    else
+                    {
+                        <div class="answers-diet-container">
+                            @foreach (var answer in question.PossibleAnswersDiet.OrderBy(a => a.Id))
+                            {
+                                <button class="answer-btn @(IsAnswerSelected(question.Id, answer.Id) ? "selected" : "")" @onclick="() => SelectAnswer(question.Id, answer.Id)">
+                                    @answer.AnswerText
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+            <button @onclick="SubmitAllAnswers" class="mr-3">Wyślij odpowiedzi</button>
+        }
+        @if (areAnswersSubmitted)
+        {
+            <div class="alert alert-success margin-info" role="alert">
+                Twoje odpowiedzi zostały zapisane.
+                <button type="button" class="close" @onclick="CloseAlert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="plan-body">
+            <h3 class="text-calculator">Twój plan dietetyczny</h3>
+            <p>Pamiętaj, gdy nie uda Ci się osiągnąć zapotrzebowania kalorycznego, zawsze możesz sięgnąć po owoca czy warzywo!!!</p>
+            <p>Zwróc uwagę, że makra śniadań są podawane na 100g, a obiadu i kolacji na 200g</p>
+            @foreach (var day in userDietSets.GroupBy(u => u.MealDay).OrderBy(g => g.Key))
+            {
+                <table class="table-diet">
+                    <thead>
+                        <tr>
+                            <th colspan="3">Dzień @day.Key</th>
+                        </tr>
+                        <tr>
+                            <th>Posiłek</th>
+                            <th>Nazwa</th>
+                            <th>Kalorie</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var mealSet in day)
+                        {
+                            <tr @onclick="@(() => ToggleDetails("Breakfast", mealSet.Breakfast.Id, day.Key ?? 0))">
+                                <td>Śniadanie</td>
+                                <td class="name-exercise-class">@mealSet.Breakfast.Name</td>
+                                <td>@mealSet.Breakfast.Calories</td>
+                            </tr>
+                            if (expandedMeals.Contains($"Breakfast-{mealSet.Breakfast.Id}-{day.Key}"))
+                            {
+                                <tr>
+                                    <td colspan="3">
+                                        <div class ="exercise-description">
+                                            <p>Białko: @mealSet.Breakfast.Protein g</p>
+                                            <p>Tłuszcze: @mealSet.Breakfast.Fats g</p>
+                                            <p>Węglowodany: @mealSet.Breakfast.Carbohydrates g</p>
+                                            <p>Przepis: @(mealSet.Breakfast.Recipes.FirstOrDefault()?.RecipeText)</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                            <tr @onclick="@(() => ToggleDetails("Lunch", mealSet.Lunch.Id, day.Key ?? 0))">
+                                <td>Obiad</td>
+                                <td class="name-exercise-class">@mealSet.Lunch.Name</td>
+                                <td>@mealSet.Lunch.Calories</td>
+                            </tr>
+                            if (expandedMeals.Contains($"Lunch-{mealSet.Lunch.Id}-{day.Key}"))
+                            {
+                                <tr>
+                                    <td colspan="3">
+                                        <div class="exercise-description">
+                                            <p>Białko: @mealSet.Lunch.Protein g</p>
+                                            <p>Tłuszcze: @mealSet.Lunch.Fats g</p>
+                                            <p>Węglowodany: @mealSet.Lunch.Carbohydrates g</p>
+                                            <p>Przepis: @(mealSet.Breakfast.Recipes.FirstOrDefault()?.RecipeText)</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                            <tr @onclick="@(() => ToggleDetails("Dinner", mealSet.Dinner.Id, day.Key ?? 0))">
+                                <td>Kolacja</td>
+                                <td class="name-exercise-class">@mealSet.Dinner.Name</td>
+                                <td>@mealSet.Dinner.Calories</td>
+                            </tr>
+                            if (expandedMeals.Contains($"Dinner-{mealSet.Dinner.Id}-{day.Key}"))
+                            {
+                                <tr>
+                                    <td colspan="3">
+                                        <div class="exercise-description">
+                                            <p>Białko: @mealSet.Dinner.Protein g</p>
+                                            <p>Tłuszcze: @mealSet.Dinner.Fats g</p>
+                                            <p>Węglowodany: @mealSet.Dinner.Carbohydrates g</p>
+                                            <p>Przepis: @(mealSet.Dinner.Recipes.FirstOrDefault()?.RecipeText)</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+        <button class="reset-btn" @onclick="ResetUserAnswers">Reset</button>
+    }
+</div>
+
+@code {
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationStateTask { get; set; }
+    List<QuestionDiet> questionDiet = new List<QuestionDiet>();
+    List<UserAnswersDiet> userAnswersDiet = new List<UserAnswersDiet>();
+    List<UserAnswersDietCalories> userAnswersDietCalories = new List<UserAnswersDietCalories>();
+    List<Meals> dietPlan = new List<Meals>();
+    List<UserMealSets> userDietSets = new List<UserMealSets>();
+    private string UserIdentityName = "";
+
+    bool showResults = false;
+
+    private int? caloricRequirement;
+
+    private Dictionary<int, int> selectedAnswers = new Dictionary<int, int>();
+
+    private bool areAnswersSubmitted = false;
+
+    private HashSet<int> selectAnswers = new HashSet<int>();
+
+    private HashSet<string> expandedMeals = new HashSet<string>();
+
+    private async void CloseAlert()
+    {
+        areAnswersSubmitted = false;
+        await JSRuntime.InvokeVoidAsync("location.reload");
+    }
+
+    private bool IsAnswerSelected(int questionId, int answerId)
+    {
+        return selectedAnswers.TryGetValue(questionId, out var selectedAnswerId) && selectedAnswerId == answerId;
+    }
+
+    private void SelectAnswer(int questionId, int answerId)
+    {
+        if (selectedAnswers.ContainsKey(questionId))
+        {
+            if (selectedAnswers[questionId] == answerId)
+            {
+                selectedAnswers.Remove(questionId);
+            }
+            else
+            {
+                selectedAnswers[questionId] = answerId;
+            }
+        }
+        else
+        {
+            selectedAnswers.Add(questionId, answerId);
+        }
+
+        StateHasChanged();
+    }
+
+    private void ToggleDetails(string mealType, int mealId, int? dayKey)
+    {
+        if (!dayKey.HasValue)
+        {
+            return; // lub obsłuż sytuację, gdy dayKey jest null
+        }
+
+        string uniqueKey = $"{mealType}-{mealId}-{dayKey.Value}";
+        if (expandedMeals.Contains(uniqueKey))
+        {
+            expandedMeals.Remove(uniqueKey);
+        }
+        else
+        {
+            expandedMeals.Add(uniqueKey);
+        }
+    }
+
+    private bool IsExpanded(string mealType, int mealId, int day)
+    {
+        string uniqueKey = $"{mealType}-{mealId}-{day}";
+        return expandedMeals.Contains(uniqueKey);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (authenticationStateTask != null)
+        {
+            var user = (await authenticationStateTask).User;
+            if (user.Identity != null)
+            {
+                UserIdentityName = user.Identity.Name ?? "";
+            }
+        }
+
+        var hasSubmittedData = await DietService.HasUserSubmittedAnswersOrDiet(UserIdentityName);
+
+        if (hasSubmittedData)
+        {
+            showResults = true;
+            userDietSets = await DietService.GetUserMealSetsAsync(UserIdentityName);
+        }
+        else
+        {
+            questionDiet = await DietService.GetQuestionsAsync();
+        }
+    }
+
+    private async Task SubmitAllAnswers()
+    {
+        if (selectedAnswers.Count + (caloricRequirement.HasValue ? 1 : 0) != questionDiet.Count)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Proszę odpowiedzieć na wszystkie pytania przed wysłaniem.");
+            return;
+        }
+
+        foreach (var entry in selectedAnswers)
+        {
+            var userAnswerDiet = new UserAnswersDiet
+                {
+                    UserName = UserIdentityName,
+                    QuestionId = entry.Key,
+                    ChosenAnswerId = entry.Value,
+                    DateAnswered = DateTime.Now
+                };
+            await DietService.SaveUserAnswerAsync(userAnswerDiet);
+        }
+
+        var caloricQuestionId = questionDiet.FirstOrDefault(q => q.Category.Contains("Calories"))?.Id;
+        if (caloricRequirement.HasValue)
+        {
+            var caloricAnswer = new UserAnswersDietCalories
+                {
+                    UserName = UserIdentityName,
+                    QuestionId = caloricQuestionId.Value,
+                    Answer = caloricRequirement.Value,
+                    DateAnswered = DateTime.Now
+                };
+            await DietService.SaveUserAnswerCaloriesAsync(caloricAnswer);
+        }
+        dietPlan = await DietService.GenerateDietPlanForUser(UserIdentityName);
+        selectedAnswers.Clear();
+        areAnswersSubmitted = true;
+        await InvokeAsync(StateHasChanged);
+
+    }
+
+    private async Task ResetUserAnswers()
+    {
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Czy na pewno chcesz zresetować swoje odpowiedzi?");
+        if (confirmed)
+        {
+            await DietService.ClearUserDietPlanAsync(UserIdentityName);
+            await DietService.ClearUserAnswersDietAsync(UserIdentityName);
+            showResults = false;
+            questionDiet = await DietService.GetQuestionsAsync();
+            dietPlan = new List<Meals>();
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+}

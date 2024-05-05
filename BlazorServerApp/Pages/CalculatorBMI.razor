@@ -1,0 +1,347 @@
+﻿@page "/CalculatorBMI"
+@using BlazorServerApp.Data
+@using BlazorServerAppDB.Data.CalculatorBMI
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inherits OwningComponentBase<CalculatorBMIService>
+@inject IJSRuntime JSRuntime
+
+<div class="main-calculator">
+    <div class="calculator">
+        @* <Animate Animation="BlazorAnimate.Animations.FadeDown" Duration="TimeSpan.FromSeconds(1.5)" Delay="TimeSpan.FromSeconds(1.2)">  *@
+        <h3 class="text-calculator">Kalkulator BMI</h3>
+        <div class="form-group1">
+            <label for="weight">Waga (kg):</label>
+            <input @bind="weight" type="number" class="form-control1" id="weight" />
+        </div>
+        <div class="form-group1">
+            <label for="height">Wzrost (cm):</label>
+            <input @bind="height" type="number" class="form-control1" id="height" />
+        </div>
+        <button class="mr-7" @onclick="CalculateBmi">Oblicz</button>
+        @if (bmiResult.HasValue)
+        {
+            <p class="result">Twoje BMI: @bmiResult.Value.ToString("0.00")</p>
+        }
+        <p class="result-button">
+            <button class="mr-7" @onclick="AddNewForecast">Dodaj swój wynik</button>
+        </p>
+        @*</Animate>*@
+    </div>
+ 
+    @if (ShowPopup)
+    {
+        <div class="window" role="dialog">
+            <div class="window-dialog">
+                <div class="model-content">
+                    <div class="model-header">
+                        <h3 class="model-title">Dodaj wynik do historii</h3>
+                    </div>
+                    <div class="model-body">
+                        <input class="form-control1" type="text"
+                               placeholder="Wpisz tutaj swoje BMI"
+                               @bind="objBmiresult.Result" />
+                        <br />
+                        @if (SaveError1)
+                        {
+                            <p class="text-5l">Pole BMI nie może być puste</p>
+                        }
+                        @if (SaveError2)
+                        {
+                            <p class="text-5l">Bmi zostało już dzisiaj dodane</p>
+                        }
+                        <div class="buttons-window">
+                        <button class="mr-7"
+                                @onclick="SaveForecast">
+                            Zapisz
+                        </button>
+                        <button type="button" class="mr-7"
+                                @onclick="ClosePopup">
+                            Zamknij
+                        </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    <h2 class="text-5xl">Historia twojego BMI</h2>
+    <div class="chart-container">
+        <div class="apex-chart">
+    <ApexChart TItem="BmiResult"
+               Title="Wskaźnik masy ciała"
+               Options="@options"
+               Debug>
+
+        <ApexPointSeries TItem="BmiResult"
+                         Items="forecasts"
+                         Name="BMI"
+                         SeriesType="SeriesType.Line"
+                         XValue="@(e => e.CalculationDate?.ToShortDateString())"
+                         YAggregate="@(e => e.Sum(e => e.Result))"
+                         />
+     </ApexChart>
+     </div>
+     </div>
+         <div class="table-content">
+             @if (forecasts == null)
+            {
+                <p><em>Loading...</em></p>
+            }
+            else
+            {
+                <TableBMI></TableBMI>
+            }
+        </div>
+       <Animate Animation="BlazorAnimate.Animations.FadeUp" Anchor="#section1" AnchorPlacement="Anchor.BottomTop" Duration="TimeSpan.FromSeconds(1.2)" Easing="Easings.EaseInOutBack" Once="false" Mirror="true">   
+       <table class="styled-table">
+         <thead>
+             <tr>
+                 <th>BMI</th>
+                 <th>Interpretacja wyniku</th>
+             </tr>
+         </thead>
+         <tbody>
+                <tr>
+                    <td>&lt 16,0</td>
+                    <td>wygłodzenie</td>
+                </tr>
+                <tr>
+                    <td>16,0 - 16,9</td>
+                    <td>wychudzenie</td>
+                </tr>
+                <tr>
+                    <td>17,0 - 18,4</td>
+                    <td>niedowaga</td>
+                </tr>
+                <tr>
+                    <td>18,5 - 24,9</td>
+                    <td>waga prawidłowa</td>
+                </tr>
+                <tr>
+                    <td>25,0 - 29,9</td>
+                    <td>nadwaga</td>
+                </tr>
+                <tr>
+                    <td>30,0 - 34,9</td>
+                    <td>otyłość I stopnia</td>
+                </tr>
+                <tr>
+                    <td>35,0 - 39,9</td>
+                    <td>otyłość II stopnia</td>
+                </tr>
+                <tr>
+                    <td>&gt 40</td>
+                    <td>otyłość III stopnia</td>
+                </tr>
+        </tbody>
+    </table>
+    </Animate>
+</div>
+
+ @code {
+
+    private double? weight;
+    private double? height;
+    private double? bmiResult;
+
+    private void CalculateBmi()
+    {
+        if (weight.HasValue && height.HasValue && height > 0)
+        {
+            var heightInMeters = height.Value / 100;
+            bmiResult = weight / (heightInMeters * heightInMeters);
+        }
+    }
+
+    private ApexChartOptions<BmiResult> options = new ApexCharts.ApexChartOptions<BmiResult>();
+    protected override void OnInitialized()
+    {
+        options.Colors = new List<string> { "#6a329f" };
+
+        options.Debug = true;
+        options.ForecastDataPoints = new ForecastDataPoints
+            {
+                DashArray = 4,
+                FillOpacity = 0.5,
+            };
+        options.Tooltip = new ApexCharts.Tooltip { X = new TooltipX { Format = @"MMMM \ yyyy" } };
+        options.Tooltip = new ApexCharts.Tooltip
+            {
+                Y = new TooltipY
+                {
+                    Title = new TooltipYTitle { Formatter = @"function(name) { return name + ':' }" },
+                    Formatter = @"function(value, { series, seriesIndex, dataPointIndex, w }) { return  value }"
+                },
+            };
+        options.Xaxis = new XAxis
+            {
+                Title = new AxisTitle
+                {
+                    OffsetY = 5,
+                    Text = "Dni",
+                    Style = new AxisTitleStyle { FontSize = "17px", Color = "grey" }
+                },
+                AxisBorder = new AxisBorder
+                {
+                    Height = 2
+                }
+            };
+        options.Yaxis = new List<YAxis>();
+        options.Yaxis.Add(new YAxis
+            {
+                Min = 0, 
+                Max = 60, 
+                DecimalsInFloat = 0,
+                Labels = new YAxisLabels { Rotate = -45, Style = new AxisLabelStyle { FontSize = "10px" } },
+                Title = new AxisTitle { Text = "Wartość", Style = new AxisTitleStyle { FontSize = "17px", Color = "grey" } }
+            });
+
+        options.Annotations = new Annotations { Yaxis = new List<AnnotationsYAxis>() };
+        options.Annotations.Yaxis.Add(new AnnotationsYAxis
+            {
+                Y = 25,
+                BorderWidth = 4,
+                StrokeDashArray = 0,
+                BorderColor = "red",
+                Label = new Label { Text = "Otyłość" }
+            });
+        options.Annotations.Yaxis.Add(new AnnotationsYAxis
+            {
+                Y = 18.5,
+                BorderWidth = 4,
+                StrokeDashArray = 0,
+                BorderColor = "green",
+                Label = new Label { Text = "Waga prawidłowa" }
+            });
+
+    }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationStateTask { get; set; }
+    List<BmiResult> forecasts = new List<BmiResult>();
+    private string UserIdentityName = "";
+    protected override async Task OnInitializedAsync()
+    {
+        if (authenticationStateTask != null)
+        {
+            var user = (await authenticationStateTask).User;
+            if (user.Identity != null)
+            {
+                UserIdentityName = user.Identity.Name ?? "";
+            }
+        }
+        var loadedForecasts = await @Service.GetForecastAsync(UserIdentityName);
+        forecasts = loadedForecasts.OrderBy(f => f.CalculationDate).ToList();
+        forecasts = await @Service.GetForecastAsync(UserIdentityName);
+        UpdateYAxisBasedOnData();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("refreshPage");
+        }
+    }
+
+    BmiResult objBmiresult = new BmiResult();
+
+
+    bool SaveError1 = false;
+    bool SaveError2 = false;
+    bool ShowPopup = false;
+
+    private void UpdateYAxisBasedOnData()
+    {
+        var maxYValue = forecasts.Max(product => product.Result) ?? 0;
+        var yAxisMax = maxYValue + (maxYValue * 0.1m);
+
+        options.Yaxis.Clear();
+        options.Yaxis.Add(new YAxis
+            {
+                Min = 0,
+                Max = yAxisMax,
+                DecimalsInFloat = 0,
+                Labels = new YAxisLabels { Rotate = -45, Style = new AxisLabelStyle { FontSize = "10px" } },
+                Title = new AxisTitle { Text = "Wartość", Style = new AxisTitleStyle { FontSize = "17px", Color = "grey" } }
+            });
+
+        StateHasChanged();
+    }
+
+    private void SortForecasts()
+    {
+        forecasts = forecasts.OrderByDescending(f => f.CalculationDate).ToList();
+    }
+
+    void ClosePopup()
+    {
+        ShowPopup = false;
+        SaveError1 = false;
+        SaveError2 = false;
+    }
+
+    void AddNewForecast()
+    {
+        if (objBmiresult.Id == 0)
+            objBmiresult = new BmiResult();
+
+        objBmiresult.Id = 0;
+
+        ShowPopup = true;
+    }
+
+    async Task DeleteForecast(BmiResult bmiResult)
+    {
+        ShowPopup = false;
+        objBmiresult = bmiResult;
+        var result = @Service.DeleteForecastAsync(bmiResult);
+
+        forecasts = await @Service.GetForecastAsync(UserIdentityName);
+        SortForecasts();
+    }
+
+
+    async Task SaveForecast()
+    {
+        var today = DateTime.Now.Date;
+        var existingForecast = forecasts.FirstOrDefault(f => f.UserName == UserIdentityName && f.CalculationDate?.Date == today);
+
+        if (existingForecast != null)
+        {
+            SaveError2 = true;
+            return;
+
+        }
+
+        if (objBmiresult.Result == null)
+        {
+            SaveError1 = true;
+            return;
+        }
+        SaveError1 = false;
+        ShowPopup = false;
+        if (objBmiresult.Id == 0)
+        {
+            BmiResult objNewBmiresult = new BmiResult();
+            objNewBmiresult.CalculationDate = System.DateTime.Now;
+            objNewBmiresult.Result = objBmiresult.Result;
+            objNewBmiresult.UserName = UserIdentityName;
+
+            var result = @Service.CreateForecastAsync(objNewBmiresult);
+        }
+        else
+        {
+            // Tu może być w przyszłości update
+        }
+
+        forecasts = await @Service.GetForecastAsync(UserIdentityName);
+        SortForecasts();
+        RefreshData();
+    }
+
+    async Task RefreshData()
+    {
+        await JSRuntime.InvokeVoidAsync("refreshPage");
+    }
+}

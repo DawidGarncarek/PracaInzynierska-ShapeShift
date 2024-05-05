@@ -1,0 +1,79 @@
+﻿@page
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Logowanie";
+}
+
+@{
+    Layout = "/Pages/Shared/_IdentityEmptyLayout.cshtml";
+}
+    <div class="box-right">
+        <Animate Animation="BlazorAnimate.Animations.FadeDown" Duration="TimeSpan.FromSeconds(0.5)"
+                 Delay="TimeSpan.FromSeconds(1)">
+            <form id="account" method="post">
+                <h1 class="box-right-nav">@ViewData["Title"]</h1>
+                <p class="text-right">Nie masz konta? <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="text-5">Utwórz konto</a> to nie zajmie dłużej niż minutę</p>
+                <div class="login-input">
+                    <input asp-for="Input.Email" class="email" autocomplete="username" aria-required="true" placeholder="E-mail" />
+                    <span asp-validation-for="Input.Email" class="error-text"></span>
+                    <br>
+                    <input asp-for="Input.Password" class="password" autocomplete="current-password" aria-required="true" placeholder="Hasło" />
+                    <span asp-validation-for="Input.Password" class="error-text"></span>
+                </div>
+
+                <br><br>
+
+                <div class="checkbox-forget-box">
+                     <div class="checkbox-wrapper-42">
+                          <input id="cbx-42" type="checkbox" />
+                          <label asp-for="Input.RememberMe" class="cbx" for="cbx-42">
+                               <label class="lbl" for="cbx-42">
+                                <input class="form-check-input" asp-for="Input.RememberMe" />
+                                @Html.DisplayNameFor(m => m.Input.RememberMe)
+                               </label>
+                           </label>
+                     </div>
+                <p><a id="forgot-password" asp-page="./ForgotPassword" class="text-5">Zapomniałeś hasła?</a></p>
+                </div>
+
+                <br>
+                <button id="login-submit" type="submit" class="login-button">Zaloguj</button>
+            </form>
+    <a href="~/"><button class="back-button"><img alt="image" src="/css/Photos/icons8-left-arrow-48.png" class="home-icon10" /></button></a>
+    </Animate>
+        </div>
+@*     <div class="col-md-6 col-md-offset-2">
+        <section>
+            <h3>Use another service to log in.</h3>
+            <hr />
+            @{
+                if ((Model.ExternalLogins?.Count ?? 0) == 0)
+                {
+                    <div>
+                        <p>
+                            There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">article
+                            about setting up this ASP.NET application to support logging in via external services</a>.
+                        </p>
+                    </div>
+                }
+                else
+                {
+                    <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
+                        <div>
+                            <p>
+                                @foreach (var provider in Model.ExternalLogins!)
+                                {
+                                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
+                                }
+                            </p>
+                        </div>
+                    </form>
+                }
+            }
+        </section>
+    </div> *@
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

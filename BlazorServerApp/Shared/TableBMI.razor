@@ -1,0 +1,151 @@
+﻿@using BlazorServerApp.Data
+@using BlazorServerAppDB.Data.CalculatorBMI
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inherits OwningComponentBase<CalculatorBMIService>
+@inject IJSRuntime JSRuntime
+
+<Modal @ref="modal" Title="Tabela twojego BMI">
+    <BodyTemplate>
+        <p class="text-black">
+            <div class="table-wrapper">
+                <table class="fl-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Wynik</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var forecast in forecasts)
+                        {
+                            <tr>
+                                <td>@forecast.CalculationDate?.ToShortDateString()</td>
+                                <td>@forecast.Result</td>
+                                <td class="danger-button-table">
+                                    <button class="btn btn-danger"
+                                            @onclick="(() => DeleteForecast(forecast))">
+                                        Usuń
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </p>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Danger" @onclick="OnHideModalClick">Zamknij</Button>
+    </FooterTemplate>
+</Modal>
+
+<button class="mr-7" @onclick="OnShowModalClick">Tabela twoich wyników</button>
+
+
+@code {
+    private Modal modal = default!;
+
+    private async Task OnShowModalClick()
+    {
+        await modal.ShowAsync();
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await modal.HideAsync();
+        await RefreshData(); 
+    }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationStateTask { get; set; }
+    List<BmiResult> forecasts = new List<BmiResult>();
+    private string UserIdentityName = "";
+    protected override async Task OnInitializedAsync()
+    {
+        if (authenticationStateTask != null)
+        {
+            var user = (await authenticationStateTask).User;
+            if (user.Identity != null)
+            {
+                UserIdentityName = user.Identity.Name ?? "";
+            }
+        }
+        forecasts = await @Service.GetForecastAsync(UserIdentityName);
+        forecasts = forecasts.OrderBy(f => f.CalculationDate).ToList();
+    }
+    BmiResult objBmiresult = new BmiResult();
+
+
+    bool SaveError1 = false;
+    bool SaveError2 = false;
+    bool ShowPopup = false;
+
+    void ClosePopup()
+    {
+        ShowPopup = false;
+        SaveError1 = false;
+        SaveError2 = false;
+    }
+
+    void AddNewForecast()
+    {
+        if (objBmiresult.Id == 0)
+            objBmiresult = new BmiResult();
+
+        objBmiresult.Id = 0;
+
+        ShowPopup = true;
+    }
+
+    async Task DeleteForecast(BmiResult bmiResult)
+    {
+        ShowPopup = false;
+        objBmiresult = bmiResult;
+        var result = @Service.DeleteForecastAsync(bmiResult);
+
+        forecasts = await @Service.GetForecastAsync(UserIdentityName);
+    }
+
+
+    async Task SaveForecast()
+    {
+        var today = DateTime.Now.Date;
+        var existingForecast = forecasts.FirstOrDefault(f => f.UserName == UserIdentityName && f.CalculationDate?.Date == today);
+
+        if (existingForecast != null)
+        {
+            SaveError2 = true;
+            return;
+
+        }
+
+        if (objBmiresult.Result == null)
+        {
+            SaveError1 = true;
+            return;
+        }
+        SaveError1 = false;
+        ShowPopup = false;
+        if (objBmiresult.Id == 0)
+        {
+            BmiResult objNewBmiresult = new BmiResult();
+            objNewBmiresult.CalculationDate = System.DateTime.Now;
+            objNewBmiresult.Result = objBmiresult.Result;
+            objNewBmiresult.UserName = UserIdentityName;
+
+            var result = @Service.CreateForecastAsync(objNewBmiresult);
+        }
+        else
+        {
+            // Tu może być w przyszłości update
+        }
+
+        forecasts = await @Service.GetForecastAsync(UserIdentityName);
+    }
+
+    async Task RefreshData()
+    {
+        await JSRuntime.InvokeVoidAsync("refreshPage");
+    }
+}

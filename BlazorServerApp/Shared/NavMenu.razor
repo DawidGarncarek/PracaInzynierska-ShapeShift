@@ -1,0 +1,103 @@
+﻿@inject IJSRuntime JSRuntime
+
+<home class="background">
+    <div class="menu">
+        <header>
+            <div class="container">
+                 <Animate Animation="BlazorAnimate.Animations.FadeRight" Duration="TimeSpan.FromSeconds(1.5)" Delay="TimeSpan.FromSeconds(1.5)"> 
+                <a href="#"><img class="pictureNavMenu" alt="image" src="css/Photos/LOGO_o.png" /></a>
+                 </Animate> 
+                <nav>
+                    <AuthorizeView>
+                    <div class="dropdown">
+                    <button class="dropbtn">Funkcje</button>
+                        <div class="dropdown-content">
+                           <a href="CalculatorBMI">Kalkulator BMI</a>
+                           <a href="WeightPage">Waga</a>
+                           <a href="CaloriesCalculator">Kalkulator Kalorii</a>
+                           <a href="Diet">Dieta</a>
+                           <a href="Exercises">Ćwiczenia</a>
+                        </div>
+                    </div>
+                    </AuthorizeView>
+                    <a href="AboutUs" class="text-gray-300">O nas</a>
+                    <a href="PriceList" class="text-gray-300">Cennik</a>
+                    <a href="OurTeam" class="text-gray-300">Nasz zespół</a>
+                    <a href="Blog" class="text-gray-300">Blog</a>
+                </nav>
+          <div class="buttons-navmenu">
+                <AuthorizeView>
+                    <Authorized>
+                        <form method="post" action="Identity/Account/Logout">
+                            <button type="submit" class="mr-3">Wyloguj</button>
+                        </form>
+                    </Authorized>
+                    <NotAuthorized>
+                        <div class="buttons">
+                            <a href="Identity/Account/Login" class="mr-2">Logowanie</a>
+                            <a href="Identity/Account/Register" class="mr-3">Rejestracja</a>
+                        </div>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </div>
+                <div class="toggle_btn">
+                    <i class="fa-solid fa-bars"></i>
+                </div>
+            </div>
+            <div class="dropdown_menu">
+                <AuthorizeView>
+                    <li>
+                        <div class="dropdown">
+                        <button class="dropbtn">Funkcje</button>
+                        <div class="dropdown-content">
+                            <a href="CalculatorBMI">Kalkulator BMI</a>
+                            <a href="WeightPage">Waga</a>
+                            <a href="CaloriesCalculator">Kalkulator Kalorii</a>
+                            <a href="Diet">Dieta</a>
+                            <a href="Exercises">Ćwiczenia</a>
+                        </div>
+                    </div>
+                    </li>
+                </AuthorizeView>
+                <li><a href="AboutUs" class="text-gray-300">O nas</a></li>
+                <li><a href="PriceList" class="text-gray-300">Cennik</a></li>
+                <li><a href="OurTeam" class="text-gray-300">Nasz zespół</a></li>
+                <li><a href="Blog" class="text-gray-300">Blog</a></li>
+                <AuthorizeView>
+                    <Authorized>
+                        <form method="post" action="Identity/Account/Logout">
+                            <li><button type="submit" class="mr-3">Wyloguj</button></li>
+                        </form>
+                    </Authorized>
+                    <NotAuthorized>
+                        <div class="buttons">
+                            <li><a href="Identity/Account/Login" class="mr-2">Logowanie</a></li>
+                            <li><a href="Identity/Account/Register" class="mr-3">Rejestracja</a></li>
+                        </div>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </div>
+        </header>
+    </div>
+</home>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("eval", @"
+            const toggleBtn = document.querySelector('.toggle_btn');
+            const toggleBtnIcon = document.querySelector('.toggle_btn i');
+            const dropDownMenu = document.querySelector('.dropdown_menu');
+
+            toggleBtn.onclick = function () {
+                dropDownMenu.classList.toggle('open');
+                const isOpen = dropDownMenu.classList.contains('open');
+
+                toggleBtnIcon.classList = isOpen ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';  
+            };
+        ");
+        }
+    }
+}

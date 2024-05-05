@@ -1,0 +1,223 @@
+﻿@page "/Exercises"
+@using BlazorServerApp.Data
+@using BlazorServerAppDB.Data.Exercises
+@using System.ComponentModel.DataAnnotations
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ExerciseService ExerciseService
+@inject IJSRuntime JSRuntime;
+
+<div class="body-exercises">
+    @if (!showResults)
+    {
+        <h3 class="text-calculator">Ankieta do ćwiczeń</h3>
+        @if (questionExercises == null)
+        {
+            <p><em>Ładowanie pytań...</em></p>
+        }
+        else
+        {
+            foreach (var question in questionExercises)
+            {
+                <div class="question-container">
+                    <p>@question.QuestionText</p>
+                    <div class="answers-container">
+                        @foreach (var answer in question.PossibleAnswersExercises.OrderBy(a => a.Id))
+                        {
+                            <button class="answer-btn @(IsAnswerSelected(question.Id, answer.Id) ? "selected" : "")" @onclick="() => SelectAnswer(question.Id, answer.Id)">
+                                @answer.AnswerText
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+            <button @onclick="SubmitAllAnswers" class="mr-3">Wyślij odpowiedzi</button>
+        }
+        @if (areAnswersSubmitted)
+        {
+            <div class="alert alert-success margin-info" role="alert">
+                Twoje odpowiedzi zostały zapisane.
+                <button type="button" class="close" @onclick="CloseAlert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+
+    }
+    else
+    {
+        <div>
+            <h3 class="text-calculator">Twój plan treningowy</h3>
+            <p>Przy treningach trwających mniej niż 30 minut staraj się robić przerwy między ćwiczeniami maksymalnie 15 sekundowe!!! </p>
+            <div class="training-day-container">
+            @foreach (var day in exercisePlanSets.GroupBy(e => e.TrainingDay).OrderBy(g => g.Key))
+            {
+                <table class="table-exercise">
+                    <thead>
+                        <tr>
+                            <th colspan="2">Dzień treningowy @day.Key</th>
+                        </tr>
+                        <tr>
+                            <th>Nazwa ćwiczenia</th>
+                            <th>Czas trwania (minuty)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var session in day)
+                        {
+                            <tr @onclick="() => ToggleDetails(session.Id)">
+                                <td class="name-exercise-class">@session.ExerciseSet.Name</td>
+                                <td>@session.ExerciseSet.DurationMinutes</td>
+                            </tr>
+                            if (visibleDetails.Contains(session.Id))
+                            {
+                                <tr>
+                                    <td colspan="2">
+                                        <div class="exercise-description">
+                                                <p>Opis: @session.ExerciseSet.Description</p>
+                                                <p>Intensywność: @session.ExerciseSet.IntensityLevel</p>
+                                                <p>Lokalizacja: @session.ExerciseSet.Location</p>
+                                                <p>Cel: @session.ExerciseSet.Goals</p>
+                                                <p>Trudność: @session.ExerciseSet.DifficultyLevel</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+            <button class="reset-btn" @onclick="ResetUserAnswers">Reset</button>
+        </div>
+    }
+</div>
+@code {
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationStateTask { get; set; }
+    //List<PossibleAnswersExercises> possibleAnswersExercises = new List<PossibleAnswersExercises>();
+    List<QuestionExercises> questionExercises = new List<QuestionExercises>();
+    List<UserAnswersExercises> userAnswersExercises = new List<UserAnswersExercises>();
+    List<BlazorServerAppDB.Data.Exercises.Exercises> exercisePlan = new List<BlazorServerAppDB.Data.Exercises.Exercises>();
+    private List<UserExerciseSets> exercisePlanSets = new List<UserExerciseSets>();
+    private string UserIdentityName = "";
+
+    bool showResults = false;
+
+    private Dictionary<int, int> selectedAnswers = new Dictionary<int, int>();
+
+    private bool areAnswersSubmitted = false;
+
+    private HashSet<int> selectAnswers = new HashSet<int>();
+
+    private HashSet<int> visibleDetails = new HashSet<int>();
+
+    private void ToggleDetails(int sessionId)
+    {
+        if (visibleDetails.Contains(sessionId))
+        {
+            visibleDetails.Remove(sessionId);
+        }
+        else
+        {
+            visibleDetails.Add(sessionId);
+        }
+    }
+
+    private bool IsAnswerSelected(int questionId, int answerId)
+    {
+        return selectedAnswers.TryGetValue(questionId, out var selectedAnswerId) && selectedAnswerId == answerId;
+    }
+
+    private async void CloseAlert()
+    {
+        areAnswersSubmitted = false;
+        await JSRuntime.InvokeVoidAsync("location.reload");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (authenticationStateTask != null)
+        {
+            var user = (await authenticationStateTask).User;
+            if (user.Identity != null)
+            {
+                UserIdentityName = user.Identity.Name ?? "";
+            }
+        }
+
+        var hasSubmittedData = await ExerciseService.HasUserSubmittedAnswersOrExercises(UserIdentityName);
+
+        if (hasSubmittedData)
+        {
+            showResults = true;
+            exercisePlanSets = await ExerciseService.GetUserExerciseSetsAsync(UserIdentityName);
+        }
+        else
+        {
+            questionExercises = await ExerciseService.GetQuestionsAsync();
+        }
+    }
+
+    private void SelectAnswer(int questionId, int answerId)
+    {
+        if (selectedAnswers.ContainsKey(questionId))
+        {
+            if (selectedAnswers[questionId] == answerId)
+            {
+                selectedAnswers.Remove(questionId);
+            }
+            else
+            {
+                selectedAnswers[questionId] = answerId;
+            }
+        }
+        else
+        {
+            selectedAnswers.Add(questionId, answerId);
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task SubmitAllAnswers()
+    {
+        if (selectedAnswers.Count != questionExercises.Count)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Proszę odpowiedzieć na wszystkie pytania przed wysłaniem.");
+            return;
+        }
+
+        foreach (var entry in selectedAnswers)
+        {
+            var userAnswer = new UserAnswersExercises
+                {
+                    UserName = UserIdentityName,
+                    QuestionId = entry.Key,
+                    ChosenAnswerId = entry.Value,
+                    DateAnswered = DateTime.Now
+                };
+            await ExerciseService.SaveUserAnswerAsync(userAnswer);
+        }
+        exercisePlan = await ExerciseService.GenerateExercisePlanForUser(UserIdentityName);
+        selectedAnswers.Clear();
+        areAnswersSubmitted = true;
+        await InvokeAsync(StateHasChanged);
+
+        // Tutaj można dodać logikę do aktualizacji UI po zapisaniu odpowiedzi, np. przechodzenie do następnego pytania
+    }
+
+    private async Task ResetUserAnswers()
+    {
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Czy na pewno chcesz zresetować swoje odpowiedzi?");
+        if (confirmed)
+        {
+            await ExerciseService.ClearUserAnswersAsync(UserIdentityName);
+            showResults = false;
+            questionExercises = await ExerciseService.GetQuestionsAsync();
+            exercisePlan = new List<BlazorServerAppDB.Data.Exercises.Exercises>();
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+}

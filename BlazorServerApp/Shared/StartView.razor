@@ -1,0 +1,32 @@
+﻿<Modal @ref="modal" Title="Informacja">
+    <BodyTemplate>
+        <div class="text-black">
+            <p>Witaj w pierwszym kroku do zdrowszej wersji siebie!</p>
+            <p>1.Zarejestruj się – Utwórz swoje osobiste konto, podając podstawowe informacje. To pozwoli nam dostosować aplikację do Twoich indywidualnych potrzeb i celów.</p>
+            <p>2.Ustal cele – Zdefiniuj swoje cele dotyczące wagi i stylu życia. Niezależnie od tego, czy chcesz schudnąć, czy po prostu żyć zdrowiej, nasza aplikacja pomoże Ci w realizacji tych planów.</p>
+            <p>3.Śledź postępy – Korzystając z naszych narzędzi, takich jak kalkulator kalorii, planer ćwiczeń i dziennik diety, z łatwością śledź swoje codzienne nawyki i postępy na drodze do osiągnięcia wymarzonej sylwetki.</p>
+            <p>4.Ciesz się wsparciem – Dołącz do naszej społeczności, aby czerpać inspirację, motywację i wsparcie od innych użytkowników oraz naszego zespołu ekspertów.</p>
+            <p>Rozpocznij swoją podróż już teraz i odkryj, jak łatwo jest osiągnąć i utrzymać swoją idealną wagę. Jesteśmy tutaj, aby Cię wspierać na każdym kroku – od pierwszego kliknięcia po osiągnięcie i celebrowanie Twoich sukcesów.</p>
+            <p>Jeśli jesteś już zalogowany to nie trać czasu i działaj nad swoim ciałem razem z naszą aplikacją!</p>
+        </div>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Danger" @onclick="OnHideModalClick">Zamknij</Button>
+    </FooterTemplate>
+</Modal>
+
+<button class="mr-4" @onclick="OnShowModalClick">Rozpocznij</button>
+
+@code {
+    private Modal modal = default!;
+
+    private async Task OnShowModalClick()
+    {
+        await modal.ShowAsync();
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await modal.HideAsync();
+    }
+}

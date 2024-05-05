@@ -1,0 +1,140 @@
+﻿@page "/PriceList"
+@using BlazorServerApp.Data
+@using BlazorServerAppDB.Data.Price
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inherits OwningComponentBase<PriceService>
+
+
+<Modal @ref="modal" Title="Komunikat">
+    <BodyTemplate>
+        @if (!string.IsNullOrEmpty(UserIdentityName))
+        {
+            @if (!isSendComplete)
+            {
+                <p class="text-black">Czy na pewno chcesz podarować nam tę sumę pieniędzy?</p>
+            }
+            else
+            {
+                <p class="text-black">Dziękujemy za wsparcie naszej aplikacji!</p>
+            }
+        }
+        else
+        {
+            <p class="text-black">Musisz być zalogowany, aby dokonać płatności.</p>
+        }
+    </BodyTemplate>
+    <FooterTemplate>
+        @if (!string.IsNullOrEmpty(UserIdentityName))
+        {
+            @if (!isSendComplete)
+            {
+                <Button Color="ButtonColor.Success" @onclick="SendPrice">Wyślij</Button>
+                <Button Color="ButtonColor.Danger" @onclick="OnHideModalClick">Zamknij</Button>
+            }
+            else
+            {
+                <Button Color="ButtonColor.Danger" @onclick="OnHideModalClick">Zamknij</Button>
+            }
+        }
+        else
+        {
+            <Button Color="ButtonColor.Danger" @onclick="OnHideModalClick">Zamknij</Button>
+        }
+    </FooterTemplate>
+</Modal>
+
+<div class="background-price">
+    <Animate Animation="BlazorAnimate.Animations.FadeDown" Duration="TimeSpan.FromSeconds(1.2)" Delay="TimeSpan.FromSeconds(1.2)"> 
+<h2 class="h2-containter">Zostań naszym Patronite</h2>
+<div class="price-containter">
+    <div class="div1">
+        <h3 class="h3-containter">Pakiet Standard</h3>
+        <p>Twoje wsparcie jest pierwszym krokiem w naszej wspólnej podróży. Dzięki tej kwocie, która
+           zechcesz nam przekazać jesteśmy w stanie uczynić naszą aplikację jeszcze lepszą, bardziej doskonalszą.
+           Czuj się częścią naszej misji i obserwuj, jak rośniemy dzięki twojej pomocy!
+        </p>
+        <p class="price">9.99zł</p>
+        <button class="send-money" @onclick="OnShowModalClick">Podaruj</button>
+    </div>
+    <div class="div2">
+        <h3 class="h3-containter">Pakiet Medium</h3>
+        <p>Jako zaangażowany bohater w walce o swoje ciało, stajesz na przedzie naszych działań. 
+           Twoje wsparcie pomaga nam w realizacji większych projektów i rozbudowie społeczności.
+           Jeśli czujesz, że aplikacja Ci pomaga wybierz tę kwotę.</p>
+        <p class="price">19.99zł</p>
+        <button class="send-money" @onclick="OnShowModalClick">Podaruj</button>
+    </div>
+    <div class="div3">
+        <h3 class="h3-containter">Pakiet Expert</h3>
+        <p>Jeśli na prawdę aplikacja pomogła ci w życiu już nie tylko chodzi o komfort fizyczny, ale
+            i psychiczny podaruj nam tę kwotę. Będziemy ci dozgonnie wdzięczni, a w zamian skontaktujemy
+            cię za darmo z trenerem personalnym jeśli będziesz dalej chciał rozwijać swoje ciało.
+        </p>
+        <p class="price">29.99zł</p>
+        <button class="send-money" @onclick="OnShowModalClick">Podaruj</button>
+    </div>
+</div>
+    </Animate>
+</div>
+
+
+@code {
+    private Modal modal = default!;
+
+    private async Task OnShowModalClick()
+    {
+        await modal.ShowAsync();
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await modal.HideAsync();
+    }
+
+    private bool isUserAuthenticated = false;
+    private bool isSendComplete = false;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationStateTask { get; set; }
+    List<Price> prices = new List<Price>();
+    private string UserIdentityName = "";
+    protected override async Task OnInitializedAsync()
+    {
+        if (authenticationStateTask != null)
+        {
+            var user = (await authenticationStateTask).User;
+            if (user.Identity != null)
+            {
+                UserIdentityName = user.Identity.Name ?? "";
+            }
+        }
+
+        prices = await @Service.GetPriceAsync(UserIdentityName);
+    }
+
+    Price objPriceResult = new Price();
+
+    async Task SendPrice()
+    {
+
+        if (objPriceResult.Id == 0)
+        {
+            Price objNewPrice = new Price();
+            objNewPrice.Date = System.DateTime.Now;
+            objNewPrice.Price1 = 19.99m;
+            objNewPrice.Message = $"Użytkownik {UserIdentityName} podarował 19,99 zł na naszą aplikację.";
+            objNewPrice.UserName = UserIdentityName;
+
+            var result = @Service.CreatePriceAsync(objNewPrice);
+        }
+        else
+        {
+            // Tu może być w przyszłości update
+        }
+
+        prices = await @Service.GetPriceAsync(UserIdentityName);
+
+        isSendComplete = true;
+        await InvokeAsync(StateHasChanged);
+    }
+}

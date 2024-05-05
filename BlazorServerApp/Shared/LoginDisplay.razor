@@ -1,0 +1,11 @@
+﻿<AuthorizeView>
+    <Authorized>
+        <form method="post" action="Identity/Account/Logout">
+            <button type="submit" class="mr-3">Wyloguj</button>
+        </form>
+    </Authorized>
+    <NotAuthorized>
+        <a href="Identity/Account/Register">Rejestracja</a>
+        <a href="Identity/Account/Login">Logowanie</a>
+    </NotAuthorized>
+</AuthorizeView>

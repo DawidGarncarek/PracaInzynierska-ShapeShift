@@ -1,0 +1,31 @@
+﻿<Modal @ref="modal" Title="Prawa na obrazy">
+    <BodyTemplate>
+        <p class="text-black">
+            <a href="https://pixabay.com/pl/">Pixaby</a><br />
+            <a href="https://www.pexels.com/pl-pl/">Pexels</a><br />
+            <a href="https://www.flaticon.com/">flaticon</a><br />
+            <a href="https://icons8.com/icons">icons8</a><br />
+            <a href="https://fontawesome.com/">Font-Awesome</a><br />
+            oraz wykorzystanie AI do wygenerowania, niektórych fotografii.<br />
+        </p>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Danger" @onclick="OnHideModalClick">Zamknij</Button>
+    </FooterTemplate>
+</Modal>
+
+<a class="copyrights" @onclick="OnShowModalClick">©</a>
+
+@code {
+    private Modal modal = default!;
+
+    private async Task OnShowModalClick()
+    {
+        await modal.ShowAsync();
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await modal.HideAsync();
+    }
+}

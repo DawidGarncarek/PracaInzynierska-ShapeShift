@@ -1,0 +1,31 @@
+﻿<Modal @ref="modal" Title="Informacja">
+    <BodyTemplate>
+        <div class="text-black">
+            <p>Tutaj znajdziesz pokrótce opisane funkcje jakie oferuje nasza aplikacja.</p>
+            <p>Kalkulator BMI: Szybko i łatwo oblicz swój wskaźnik masy ciała (BMI), aby dowiedzieć się, czy Twoja waga jest w normie, i otrzymać wstępne wskazówki dotyczące zdrowego zakresu wagi dla Twojej budowy ciała.</p>
+            <p>Kalkulator Wagi: Określ swoją idealną wagę na podstawie wieku, płci, wzrostu i typu budowy ciała. Ten narzędzie pomoże Ci ustalić realistyczne cele wagi do osiągnięcia i utrzymania.</p>
+            <p>Kalkulator Kalorii: Dowiedz się, ile kalorii potrzebujesz każdego dnia, aby osiągnąć swoje cele dotyczące wagi, czy to chodzi o redukcję, utrzymanie, czy zwiększenie masy ciała, oparte na Twoim trybie życia i poziomie aktywności.</p>
+            <p>Planer Diety: Utwórz spersonalizowany plan posiłków, który pomoże Ci zdrowo odżywiać się każdego dnia. Wybieraj spośród zdrowych przepisów i dostosowuj swoje menu, aby pasowało do Twoich preferencji smakowych i dietetycznych celów.</p>
+            <p>Planer Ćwiczeń: Zaprojektuj indywidualny plan treningowy dostosowany do Twoich celów fitness, poziomu zaawansowania i dostępnego sprzętu. Śledź swoje postępy i utrzymuj motywację, wykonując ćwiczenia, które kochasz.</p>
+        </div>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Danger" @onclick="OnHideModalClick">Zamknij</Button>
+    </FooterTemplate>
+</Modal>
+
+<a class="mr-5" @onclick="OnShowModalClick">Zobacz więcej →</a>
+
+@code {
+    private Modal modal = default!;
+
+    private async Task OnShowModalClick()
+    {
+        await modal.ShowAsync();
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await modal.HideAsync();
+    }
+}

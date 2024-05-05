@@ -1,0 +1,48 @@
+﻿@using BlazorServerApp.Data
+@using BlazorServerAppDB.Data.ContactForm
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject FormService FormService
+@inherits OwningComponentBase<FormService>
+
+<div class="home-contact">
+    <form @onsubmit="HandleSubmit">
+        <h3 class="home-banner-heading2">Formularz kontaktowy</h3>
+        <input @bind="message.Name" type="text" class="feedback-input" placeholder="Imię" />
+        <input @bind="message.EMail" type="text" class="feedback-input" placeholder="E-mail" />
+        <input @bind="message.Topic" type="text" class="feedback-input" placeholder="Temat" />
+        <textarea @bind="message.Message" class="feedback-input" placeholder="Treść"></textarea>
+        <input type="submit" value="Wyślij" class="home-banner-button1" />
+        @if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            <p class="text-danger" style="text-align:center;padding-top:10px;">@errorMessage</p>
+        }
+        @if (messageSent)
+        {
+            <p class="text-success" style="text-align:center;padding-top:10px;">Wiadomość została pomyślnie wysłana.</p>
+        }
+    </form>
+</div>
+
+@code {
+    private ContactMessage message = new ContactMessage();
+    private string errorMessage = "";
+    private bool messageSent = false;
+
+    private async Task HandleSubmit()
+    {
+        errorMessage = "";
+        messageSent = false;
+
+        if (string.IsNullOrWhiteSpace(message.Name) || string.IsNullOrWhiteSpace(message.EMail) ||
+            string.IsNullOrWhiteSpace(message.Topic) || string.IsNullOrWhiteSpace(message.Message))
+        {
+            errorMessage = "Wszystkie pola muszą być wypełnione.";
+            return;
+        }
+
+        message.Date = DateTime.Now;
+        await FormService.AddMessageAsync(message); 
+        message = new ContactMessage();
+        messageSent = true;
+    }
+}

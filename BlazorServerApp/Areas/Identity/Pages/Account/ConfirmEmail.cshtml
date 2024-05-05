@@ -1,0 +1,15 @@
+﻿@page
+@model ConfirmEmailModel
+@{
+    ViewData["Title"] = "Potwierdzenie e-mail";
+}
+
+@{
+    Layout = "/Pages/Shared/_StatusMessageLayout.cshtml";
+}
+
+<div class="box-right">
+    <h5 class="box-right-nav3">@ViewData["Title"]</h5>
+<partial name="_StatusMessage" model="Model.StatusMessage" />
+    <a href="~/"><button class="back-button"><img alt="image" src="/css/Photos/icons8-left-arrow-48.png" class="home-icon10" /></button></a>
+</div>

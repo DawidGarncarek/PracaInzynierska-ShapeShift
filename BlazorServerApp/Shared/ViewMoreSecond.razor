@@ -1,0 +1,32 @@
+﻿<Modal @ref="modal" Title="Informacja">
+    <BodyTemplate>
+        <div class="text-black">
+            <p>Tutaj poznasz z jakich elementów jeszcze jest nasza aplikacja zbudowana.</p>
+            <p>Chat: Skorzystaj z naszej funkcji czatu, aby uzyskać wsparcie od naszego zespołu oraz wymieniać doświadczenia i porady z innymi użytkownikami. To świetny sposób na motywację i dzielenie się sukcesami.</p>
+            <p>Formularz Kontaktowy: Masz pytania, sugestie lub potrzebujesz wsparcia? Skorzystaj z naszego formularza kontaktowego, aby łatwo się z nami skontaktować. Odpowiemy na Twoje zapytania tak szybko, jak to możliwe.</p>
+            <p>"O Nas": Dowiedz się więcej o misji naszej aplikacji, naszych wartościach i jak wszystko się zaczęło. Poznaj historię i ideę stojącą za stworzeniem narzędzia, które pomaga ludziom żyć zdrowiej.</p>
+            <p>Cennik: Przejrzyj nasz przejrzysty cennik i znajdź plan, który najlepiej odpowiada Twoim potrzebom. Oferujemy różne opcje subskrypcji, by każdy mógł skorzystać z pełni możliwości naszej aplikacji.(dobrowolne wpłaty!!!)</p>
+            <p>"Nasz Zespół": Poznaj ekspertów i pasjonatów, którzy tworzą naszą aplikację. Tutaj przedstawiamy nasz zespół i ich wkład w rozwój narzędzia, które pomaga Ci osiągać cele zdrowotne i fitness.</p>
+            <p>Blog: Zainspiruj się naszym blogiem, gdzie znajdziesz artykuły na temat zdrowego stylu życia, porady dotyczące odżywiania, fitnessu i wellness. Regularnie dodajemy nowe treści, by wspierać Cię w codziennych wyzwaniach.</p>
+        </div>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Danger" @onclick="OnHideModalClick">Zamknij</Button>
+    </FooterTemplate>
+</Modal>
+
+<a class="mr-6" @onclick="OnShowModalClick">Zobacz więcej →</a>
+
+@code {
+    private Modal modal = default!;
+
+    private async Task OnShowModalClick()
+    {
+        await modal.ShowAsync();
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await modal.HideAsync();
+    }
+}

@@ -1,0 +1,152 @@
+﻿@page "/"
+
+<PageTitle>ShapeShift</PageTitle>
+
+<main class="container-text">
+    <div class="huge-text">
+        <div class="data-text">
+            <Animate Animation="BlazorAnimate.Animations.FadeDown" Duration="TimeSpan.FromSeconds(1.5)" Delay="TimeSpan.FromSeconds(1.2)"> 
+                <h2 class="text-6xl">Osiągnij swoją idealną wagę</h2>
+            </Animate>
+            <Animate Animation="BlazorAnimate.Animations.FadeUp" Duration="TimeSpan.FromSeconds(1.5)" Delay="TimeSpan.FromSeconds(1.2)">
+                <p class="text-xl mb-10">Spraw kontrolę nad wagą prostszą</p>
+            </Animate>
+            <StartView></StartView>
+            <ViewMore></ViewMore>
+        </div>
+    </div>
+</main>
+<Animate Animation="BlazorAnimate.Animations.FadeUp" Anchor="#section1" AnchorPlacement="Anchor.BottomTop" Duration="TimeSpan.FromSeconds(1.2)" Easing="Easings.EaseInOutBack" Once="false" Mirror="true">
+<div class="home-details" id="section1">
+    <div class="home-details1">
+        <div class="home-details2">
+            <span class="home-text">
+                <span>Informacje</span>
+            </span>
+            <h2 class="home-details-heading">
+                <span>O naszej aplikacji</span>
+            </h2>
+            <span class="home-details-sub-heading">
+                Nasza aplikacja internetowa została zaprojektowana, aby pomóc Ci
+                śledzić swoją wagę, wyznaczać cele i zapewniać spersonalizowane
+                rekomendacje dotyczące osiągnięcia prawidłowej masy ciała. Dzięki
+                funkcjom takim jak śledzenie kalorii, rejestrowanie wagi i
+                propozycja ćwiczeń sprawimy, że kontrola wagi będzie dla Ciebie
+                łatwa i wygodna. Rozpocznij swoją podróż już dziś i poznaj zalety
+                naszej aplikacji internetowej.
+            </span>
+        </div>
+        <div class="center-image">
+        <img class="picture1" alt="image" src="css/Photos/pierwszy.jpg" />
+    </div>
+    </div>
+</div>
+</Animate>
+<div class="home-features"></div>
+<div class="home-pricing"></div>
+<Animate Animation="BlazorAnimate.Animations.FadeUp" Anchor="#section2" AnchorPlacement="Anchor.BottomTop" Duration="TimeSpan.FromSeconds(1.2)" Easing="Easings.EaseInOutBack" Once="false" Mirror="true">
+<div class="home-gallery">
+    <div class="home-gallery1" id="section2">
+        <h3 class="home-gallery-heading-heading2">Galeria</h3>
+        <span class="home-gallery-sub-heading">
+            Poznaj ludzi, którzy wybrali naszą aplikację internetową wspierającą
+            kontrolę masy ciała
+        </span>
+        <div class="home-container3">
+            <div class="gallery-card3-gallery-card gallery-card3-root-class-name">
+                <img alt="image" src="css/Photos/gallery/index1.jpg" class="gallery-card3-image" />
+                <div class="gallery-card-caption">
+                    "Dzięki tej aplikacji nauczyłam się, jak skutecznie zarządzać moją dietą i codzienną aktywnością. Straciłam 10 kg i czuję się lepiej niż kiedykolwiek!" ~ Anna M.
+                </div>
+            </div>
+            <div class="gallery-card3-gallery-card gallery-card3-root-class-name1">
+                <img alt="image" src="css/Photos/gallery/index2.jpg" class="gallery-card3-image" />
+                <div class="gallery-card-caption">
+                    "Nigdy nie myślałem, że zrzucenie wagi może być tak proste i motywujące. Aplikacja zmieniła moje podejście do jedzenia i ćwiczeń!" ~ Katarzyna Z.
+                </div>
+            </div>
+            <div class="gallery-card3-gallery-card gallery-card3-root-class-name3">
+                <img alt="image" src="css/Photos/gallery/index3.jpg" class="gallery-card3-image" />
+                <div class="gallery-card-caption">
+                    "Zawsze miałam problem z utrzymaniem motywacji, ale funkcje monitorowania i spersonalizowane plany tej aplikacji naprawdę robią różnicę." ~ Beata K.
+                </div>
+            </div>
+            <div class="gallery-card3-gallery-card gallery-card3-root-class-name2">
+                <img alt="image" src="css/Photos/gallery/index4.jpg" class="gallery-card3-image" />
+                <div class="gallery-card-caption">
+                    "Ponad 15 kg mniej w ciągu kilku miesięcy, a wszystko dzięki praktycznym wskazówkom i wsparciu, jakie znalazłem w tej aplikacji." ~ Ewelina W.
+                </div>
+            </div>
+            <div class="gallery-card3-gallery-card gallery-card3-root-class-name4">
+                <img alt="image" src="css/Photos/gallery/index5.jpg" class="gallery-card3-image" />
+                <div class="gallery-card-caption">
+                    "Aplikacja pomogła mi nie tylko schudnąć, ale także poprawić moje ogólne samopoczucie i energię na co dzień." ~ Tomasz K.
+                </div>
+            </div>
+            <div class="gallery-card3-gallery-card gallery-card3-root-class-name5">
+                <img alt="image" src="css/Photos/gallery/index6.jpg" class="gallery-card3-image" />
+                <div class="gallery-card-caption">
+                    "Nigdy nie sądziłem, że zrzucę 20 kg bez rezygnacji z ulubionych potraw. Sekret tkwi w równowadze, której nauczyłem się dzięki tej aplikacji." ~ Michalina S.
+                </div>
+            </div>
+            <div class="gallery-card3-gallery-card gallery-card3-root-class-name6">
+                <img alt="image" src="css/Photos/gallery/index7.jpg" class="gallery-card3-image" />
+                <div class="gallery-card-caption">
+                    "Aplikacja stała się moim osobistym trenerem i dietetykiem – zawsze pod ręką. Efekty? Minus 12 kg i mnóstwo zdobytej wiedzy." ~ Dorota P.
+                </div>
+            </div>
+            <div class="gallery-card3-gallery-card gallery-card3-root-class-name7">
+                <img alt="image" src="css/Photos/gallery/index8.jpg" class="gallery-card3-image" />
+                <div class="gallery-card-caption">
+                    "To niesamowite, jak proste zmiany w diecie i aktywności mogą wpłynąć na Twoje życie. Dzięki aplikacji osiągnęłam moje cele szybciej, niż myślałam." ~ Krzysztof R.
+                </div>
+            </div>
+            <div class="gallery-card3-gallery-card gallery-card3-root-class-name8">
+                <img alt="image" src="css/Photos/gallery/index9.jpg" class="gallery-card3-image" />
+                <div class="gallery-card-caption">
+                    "Indywidualne podejście do planowania diety i ćwiczeń sprawiło, że poczułem, iż to aplikacja została stworzona specjalnie dla mnie." ~ Magdalena J.
+                </div>
+            </div>
+            <div class="gallery-card3-gallery-card gallery-card3-root-class-name9">
+                <img alt="image" src="css/Photos/gallery/index10.jpg" class="gallery-card3-image" />
+                <div class="gallery-card-caption">
+                    "Aplikacja pomogła mi zrozumieć znaczenie zdrowego odżywiania i regularnego ruchu, a rezultat to 8 kg mniej i mnóstwo energii." ~ Justyna O.
+                </div>
+            </div>
+            <div class="gallery-card3-gallery-card gallery-card3-root-class-name10">
+                <img alt="image" src="css/Photos/gallery/index11.jpg" class="gallery-card3-image" />
+                <div class="gallery-card-caption">
+                    "Dzięki tej aplikacji moje podejście do jedzenia całkowicie się zmieniło. Jestem teraz świadomym konsumentem, a moje ciało jest za to wdzięczne." ~ Patrycja G.
+                </div>
+            </div>
+            <div class="gallery-card3-gallery-card gallery-card3-root-class-name11">
+                <img alt="image" src="css/Photos/gallery/index12.jpg" class="gallery-card3-image" />
+                <div class="gallery-card-caption">
+                    "Schudłam 5 kg w pierwszym miesiącu! Aplikacja jest niesamowicie intuicyjna i pełna motywujących funkcji." ~ Marta T.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</Animate>
+<div class="home-faq"></div>
+<div class="home-banner">
+    <div class="home-banner1">
+        <Animate Animation="BlazorAnimate.Animations.FadeUp" Anchor="#section3" AnchorPlacement="Anchor.BottomTop" Duration="TimeSpan.FromSeconds(1.2)" Easing="Easings.EaseInOutBack" Once="false" Mirror="true">
+        <h3 class="home-banner-heading2" id="section3">Udoskonal swoje ciało</h3>
+        <span class="home-banner-sub-heading" id="section3">
+            Odkryj aplikację internetową, która wspiera Twoje cele w zakresie
+            kontroli masy ciała.
+        </span>
+        </Animate>
+        <ViewMoreSecond></ViewMoreSecond> 
+    </div>
+</div>
+<div class="home-chat-and-contact">
+    <Chat />
+    <Contact />
+</div>
+
+@code{
+
+}

@@ -1,0 +1,100 @@
+﻿@page "/Blog"
+
+<section class="blog">
+    <Animate Animation="BlazorAnimate.Animations.FadeDown" Duration="TimeSpan.FromSeconds(1.2)" Delay="TimeSpan.FromSeconds(1.2)"> 
+    <div class="blog-heading">
+        <strong>Aktualne Blogi</strong>
+        <h3>Nasz Blog</h3>
+    </div>
+    </Animate>
+    <div class="blog-box-container">
+        <Animate Animation="BlazorAnimate.Animations.FadeUp" Anchor="#section1" AnchorPlacement="Anchor.BottomTop" Duration="TimeSpan.FromSeconds(1.2)" Easing="Easings.EaseInOutBack" Once="false" Mirror="true">
+        <div class="blog-box" id="section1">
+            <div class="blog-box-img">
+                <img class="" alt="image" src="css/Photos/blog1.png" />
+                <a href="" class="blog-img-link">
+                    <i><img class="blog-img-icon" alt="image" src="css/Photos/exit-top-right.png"></i>
+                </a>
+            </div>
+            <div class="blog-box-text">
+                <strong>Bieganie</strong>
+                <a href="">Pierwszy Krok do Zdrowia i Dobrego Samopoczucia</a>
+                <p>
+                    Bieganie to jedna z najprostszych, a zarazem najskuteczniejszych form aktywności fizycznej, 
+                    która może przynieść znaczące korzyści dla Twojego zdrowia i samopoczucia. 
+                    W tym artykule przedstawimy, jak zacząć swoją przygodę z bieganiem, niezależnie od obecnego poziomu kondycji. Dowiesz się, jakie są pierwsze...
+                </p>
+                <div class="blog-author">
+                    <div class="blog-author-img">
+                        <img class="" alt="image" src="css/Photos/avatar1.png" />
+                    </div>
+                    <div class="blog-author-text">
+                        <strong>Agata</strong>
+                        <span>Lut 20, 2024</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </Animate>
+        <Animate Animation="BlazorAnimate.Animations.FadeUp" Anchor="#section2" AnchorPlacement="Anchor.BottomTop" Duration="TimeSpan.FromSeconds(1.2)" Easing="Easings.EaseInOutBack" Once="false" Mirror="true">
+        <div class="blog-box" id="section2">
+            <div class="blog-box-img">
+                <img class="" alt="image" src="css/Photos/blog2.png" />
+                <a href="" class="blog-img-link">
+                    <i><img class="blog-img-icon" alt="image" src="css/Photos/exit-top-right.png"></i>
+                </a>
+            </div>
+            <div class="blog-box-text">
+                <strong>Fitness</strong>
+                <a href="">Twój Osobisty Plan na Silne i Zdrowe Ciało</a>
+                <p>
+                    W dzisiejszym zabieganym świecie znalezienie czasu na regularne ćwiczenia może być wyzwaniem, ale fitness oferuje
+                    rozwiązania dostosowane do każdego stylu życia i celów zdrowotnych. W tym wpisie pokażemy, jak stworzyć spersonalizowany plantreningowy, 
+                    który nie tylko pomoże Ci osiągnąć wymarzoną sylwetkę, ale...
+                </p>
+                <div class="blog-author">
+                    <div class="blog-author-img">
+                        <img class="" alt="image" src="css/Photos/avatar2.png" />
+                    </div>
+                    <div class="blog-author-text">
+                        <strong>Tomek</strong>
+                        <span>Sty 10, 2024</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </Animate>
+        <Animate Animation="BlazorAnimate.Animations.FadeUp" Anchor="#section3" AnchorPlacement="Anchor.BottomTop" Duration="TimeSpan.FromSeconds(1.2)" Easing="Easings.EaseInOutBack" Once="false" Mirror="true">
+        <div class="blog-box" id="section3">
+            <div class="blog-box-img">
+                <img class="" alt="image" src="css/Photos/blog3.png" />
+                <a href="" class="blog-img-link">
+                    <i><img class="blog-img-icon" alt="image" src="css/Photos/exit-top-right.png"></i>
+                </a>
+            </div>
+            <div class="blog-box-text">
+                <strong>Zdrowa Dieta</strong>
+                <a href="">Jak Żywić się Świadomie i Cieszyć Się Każdym Posiłkiem</a>
+                <p>
+                    Zdrowe odżywianie nie musi być skomplikowane ani monotonne. W tym artykule pokażemy, jak łatwo wprowadzić zbilansowaną dietę do swojego 
+                    codziennego życia, czerpiąc radość z jedzenia i jednocześnie dbając o swoje zdrowie. Odkryj, jak proste zmiany w Twoim menu mogą mieć duży 
+                    wpływ na Twoje samopoczucie, energię i ogólną...
+                    </p>
+                <div class="blog-author">
+                    <div class="blog-author-img">
+                        <img class="" alt="image" src="css/Photos/avatar3.png" />
+                    </div>
+                    <div class="blog-author-text">
+                        <strong>Ola</strong>
+                        <span>Mar 30, 2024</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </Animate>
+    </div>
+</section>
+
+@code {
+
+}

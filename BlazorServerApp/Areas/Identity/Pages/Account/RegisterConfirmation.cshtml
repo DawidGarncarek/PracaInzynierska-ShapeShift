@@ -1,0 +1,33 @@
+﻿@page
+@model RegisterConfirmationModel
+@{
+    ViewData["Title"] = "Potwierdzenie rejestracji";
+}
+
+@{
+    Layout = "/Pages/Shared/_IdentityEmptyLayout.cshtml";
+}
+
+<div class="box-right">
+<h1 class="box-right-nav2">@ViewData["Title"]</h1>
+@{
+    if (@Model.DisplayConfirmAccountLink)
+    {
+<p>
+    Potwierdzenie rejestracji przez swojego e-mail na razie jest w budowie.
+    Zastępuje go tymczasowe rozwiązanie. Klikniij przycisk poniżej by potwierdzić swoją rejestrację.
+    <br>
+    <br>
+                <a href="~/"><button class="back-button"><img alt="image" src="/css/Photos/icons8-left-arrow-48.png" class="home-icon10" /></button></a>
+                <a id="confirm-link" href="@Model.EmailConfirmationUrl"><button class ="login-button">Potwierdź</button></a>
+</p>
+    }
+    else
+    {
+<p>
+        Proszę sprawdź swój e-mail by go potwierdzić (Proszę odświeżyć stronę).
+</p>
+    }
+}
+</div>
+

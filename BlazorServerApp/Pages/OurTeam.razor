@@ -1,0 +1,133 @@
+﻿@page "/OurTeam"
+@inject IJSRuntime JSRuntime
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<div class="team-body">
+<section class="item-team">
+    <div class="team-heading">
+        <h3>Nasz zespół</h3>
+    </div>
+        <div class="swiper mySwiper">
+            <div class="swiper-wrapper">
+
+                <div class="swiper-slide">
+                    <div class="team-box">
+                        <div class="team-img">
+                            <i><img alt="image" src="css/Photos/aboutus1.png"></i>
+                        </div>
+                        <div class="team-text">
+                            <strong>Marcin Nowak</strong>
+                            <span>Deweloper ASP.NET/Blazor</span>
+                            <div class="team-social">
+                                <a href="OurTeam">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="OurTeam">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <a href="OurTeam">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+
+                <div class="swiper-slide">
+                    <div class="team-box">
+                        <div class="team-img">
+                            <i><img alt="image" src="css/Photos/aboutus2.png"></i>
+                        </div>
+                        <div class="team-text">
+                            <strong>Anna Kowalska</strong>
+                            <span>Deweloper Bazy Danych SQL</span>
+                            <div class="team-social">
+                                <a href="OurTeam">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="OurTeam">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <a href="OurTeam">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="swiper-slide">
+                    <div class="team-box">
+                        <div class="team-img">
+                            <i><img alt="image" src="css/Photos/aboutus3.png"></i>
+                        </div>
+                        <div class="team-text">
+                            <strong>Jakub Lewandowski</strong>
+                            <span>Deweloper Backendu ASP.NET</span>
+                            <div class="team-social">
+                                <a href="OurTeam">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="OurTeam">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <a href="OurTeam">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="swiper-slide">
+                    <div class="team-box">
+                        <div class="team-img">
+                            <i><img alt="image" src="css/Photos/aboutus4.png"></i>
+                        </div>
+                        <div class="team-text">
+                            <strong>Katarzyna Wiśniewska</strong>
+                            <span>Specjalista ds. Dietetyki</span>
+                            <div class="team-social">
+                                <a href="OurTeam">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="OurTeam">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <a href="OurTeam">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+</section>
+</div>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("eval", @"
+                setTimeout(function() {
+                    new Swiper('.mySwiper', {
+                        effect: 'coverflow',
+                        grabCursor: true,
+                        centeredSlides: true,
+                        slidesPerView: 'auto',
+                        coverflowEffect: {
+                            rotate: 20,
+                            stretch: -20,
+                            depth: 120,
+                            modifier: 3,
+                            slideShadows: true,
+                        },
+                    });
+                }, 0); 
+            ");
+        }
+    }
+}

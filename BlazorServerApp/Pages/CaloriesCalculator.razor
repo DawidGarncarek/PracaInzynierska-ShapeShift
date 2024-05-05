@@ -1,0 +1,602 @@
+﻿@page "/CaloriesCalculator"
+@using BlazorServerApp.Data
+@using BlazorServerAppDB.Data.Calories
+@using System.ComponentModel.DataAnnotations
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject CaloriesService CaloriesService
+@inject ProductsService ProductsService
+@inject CaloriesNeededService CaloriesNeededService
+@inject IJSRuntime JSRuntime
+
+<Modal @ref="modal" Title="Twój aktualne zapotrzebowanie kaloryczne">
+    <BodyTemplate>
+        <p class="text-black">
+            <div class="table-wrapper">
+                <table class="fl-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Twój cel</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var calorie in caloriesNeeded)
+                        {
+                            if (calorie.CaloriesNeededResult.HasValue)
+                            {
+                                <tr>
+                                    <td>@calorie.NewCaloriesDate?.ToShortDateString()</td>
+                                    <td>@calorie.CaloriesNeededResult</td>
+                                    <td class="danger-button-table">
+                                        <button class="btn btn-danger"
+                                                @onclick="(() => DeleteCalorieNeeded(calorie))">
+                                            Usuń
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </p>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Danger" @onclick="OnHideModalClick">Zamknij</Button>
+    </FooterTemplate>
+</Modal>
+
+<Modal @ref="modaltable" Title="Historia twoich zapisanych kalorii">
+    <BodyTemplate>
+        <div class="table-responsive">
+        <p class="text-black">
+            <div class="table-wrapper">
+                    <div class="align-table">
+                @foreach (var group in groupedUserProducts)
+                {
+                    <div class="@GetGroupClass(group.Key)" @onclick="() => ToggleGroup(group.Key)">
+                        <h5>@group.Key.ToShortDateString()</h5>
+                    </div>
+                    if (IsGroupExpanded(group.Key))
+                    {
+                        <table class="fl-table table-margin">
+                            <thead>
+                                <tr>
+                                    <th>Produkt</th>
+                                    <th>Kalorie</th>
+                                    <th>Tłuszcze</th>
+                                    <th>Węglowodany</th>
+                                    <th>Białko</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in group.Value)
+                                {
+                                    <tr>
+                                        <td>@item.Product?.ProductName</td>
+                                        <td>@item.Calories</td>
+                                        <td>@item.Product?.Fats</td>
+                                        <td>@item.Product?.Carbohydrates</td>
+                                        <td>@item.Product?.Protein</td>
+                                        <td class="danger-button-table">
+                                            <button class="btn btn-danger" @onclick="() => DeleteCalories(item)">Usuń</button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>                       
+                    }
+                }
+                    </div>
+            </div>
+        </p>
+        </div>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Danger" @onclick="OnHideModalTableClick">Zamknij</Button>
+    </FooterTemplate>
+</Modal>
+
+<h3 class="h3-calories">Kalkulator zapotrzebowania kalorycznego</h3>
+<div class="body-calories">
+<div class="form-calories">
+<EditForm Model="@Model" OnValidSubmit="CalculateCalories">
+    <DataAnnotationsValidator />
+
+    <div class="form-group-calories">
+        <label for="gender" class="text-calories">Płeć:</label>
+        <InputSelect id="gender" class="form-input-calories" @bind-Value="Model.Gender">
+            <option value="Male">Mężczyzna</option>
+            <option value="Female">Kobieta</option>
+        </InputSelect>
+    </div>
+
+    <div class="form-group-calories">
+        <label for="age" class="text-calories">Wiek:</label>
+        <InputNumber id="age" class="form-input-calories" @bind-Value="Model.Age" min="0" />
+        <ValidationMessage For="@(() => Model.Age)" />
+    </div>
+
+    <div class="form-group-calories">
+        <label for="weight" class="text-calories">Waga (kg):</label>
+        <InputNumber id="weight" class="form-input-calories" @bind-Value="Model.Weight" min="0" />
+        <ValidationMessage For="@(() => Model.Weight)" />
+    </div>
+
+    <div class="form-group-calories">
+        <label for="height" class="text-calories">Wzrost (cm):</label>
+        <InputNumber id="height" class="form-input-calories" @bind-Value="Model.Height" min="0" />
+        <ValidationMessage For="@(() => Model.Height)" />
+    </div>
+
+    <div class="form-group-calories">
+        <label for="activityLevel" class="text-calories">Poziom aktywności fizycznej:</label>
+        <InputSelect id="activityLevel" class="form-input-calories" @bind-Value="Model.ActivityLevel">
+            <option value="None">Brak aktywności fizycznej</option>
+            <option value="Low">Mała aktywność (1-3 dni w tygodniu)</option>
+            <option value="Moderate">Średnia aktywność (3-5 dni w tygodniu)</option>
+            <option value="High">Duża aktywność (prawie codziennie)</option>
+            <option value="VeryHigh">Bardzo duża aktywność</option>
+        </InputSelect>
+    </div>
+    <div class="button-calories">
+    <button type="submit" class="mr-3">Oblicz</button>
+    </div>
+</EditForm>
+</div>
+</div>
+
+<div class="result-calories">
+@if (CaloriesResult.HasValue)
+{
+    <p>Twoje dzienne zapotrzebowanie kaloryczne wynosi: @CaloriesResult.Value kcal</p>
+}
+@if (CaloriesResult.HasValue)
+{
+    <p>Twoje dzienne zapotrzebowanie kaloryczne wynosi: @CaloriesResult.Value kcal</p>
+    <p>Podstawowa przemiana materii (BMR): @BmrResult kcal</p>
+    <p>Białko: @ProteinGrams.Value g</p>
+    <p>Węglowodany: @CarbGrams.Value g</p>
+    <p>Tłuszcze: @FatGrams.Value g</p>
+}
+</div>
+<div class="main-calculator">
+<div class="result-calories">
+<p>Jeśli chcesz dodać swoje dzienne zapotrzebowanie kaloryczne kliknij przycisk u dołu</p>
+<button class="mr-7" @onclick="AddNewCaloriesNeeded">Dodaj</button>
+</div>
+
+ @if (ShowPopup)
+{
+    <div class="window" role="dialog">
+        <div class="window-dialog">
+            <div class="model-content">
+                <div class="model-header">
+                    <h3 class="model-title">Wpisz zapotrzebowanie kaloryczne</h3>
+                </div>
+                <div class="model-body">
+                    <input class="form-control1" type="text"
+                           placeholder=""
+                           @bind="objCaloriesNeeded.CaloriesNeededResult" />
+                    <br />
+                    @if (SaveError1)
+                    {
+                        <p class="text-5l">Pole nie może być puste</p>
+                    }
+                    @if (SaveError2)
+                    {
+                        <p class="text-5l">Dane zostały już dodane</p>
+                    }
+                    <div class="buttons-window">
+                        <button class="mr-7"
+                                @onclick="SaveCaloriesNeeded">
+                            Zapisz
+                        </button>
+                        <button type="button" class="mr-7"
+                                @onclick="ClosePopup">
+                            Zamknij
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+} 
+</div>
+<h3 class="h3-calories">Licznik Kalorii</h3>
+<div class="new-calories"> 
+    <div>
+<div class="form-group-calories">
+    <label for="selectedProduct" class="text-calories">Produkt:</label>
+    <InputSelect id="selectedProduct" class="form-input-calories" @bind-Value="selectedProductId">
+        @foreach (var product in foodProducts)
+        {
+            <option value="@product.Id">@product.ProductName</option>
+        }
+    </InputSelect>
+</div>
+
+<div class="form-group-calories">
+    <label for="amountInGrams" class="text-calories">Ilość (g):</label>
+    <InputNumber id="amountInGrams" class="form-input-calories" @bind-Value="amountInGrams" min="0" />
+</div>
+
+<button class="mr-3" @onclick="SaveCaloriesResult">Dodaj kalorie</button>
+
+@if (productCaloriesResult.HasValue)
+{
+    <div class="result-calories">
+        <p>Wartość kaloryczna produktu: @productCaloriesResult.Value kcal</p>
+    </div>
+}
+</div>
+</div>
+@if (ShowOverLimitMessage)
+{
+    <div class="alert-calories">
+    <div class="alert alert-warning">@OverLimitMessage</div>
+    </div>
+}
+<div class="chart-container">
+    <div class="apex-chart">
+<ApexChart TItem="UserCaloriesResult"
+           Title="Licznik twoich kalorii"
+           XAxisType=XAxisType.Category
+           Options="@options"
+           Debug>
+
+    <ApexPointSeries TItem="UserCaloriesResult"
+                     Items="userProducts"
+                     Name="Wartości odżywcze"
+                     SeriesType="SeriesType.Bar"
+                     XValue="@(e => e.NewCaloriesDate?.ToShortDateString())"
+                     YAggregate="@(e => e.Sum(e => e.Calories))"/>
+</ApexChart>
+</div>
+</div>
+<div class="main-calculator">
+<p class="result-button">
+<p>Jeśli chcesz usunąć swoje dzienne zapotrzebowanie kaloryczne kliknij przycisk u dołu</p>
+<button class="mr-7" @onclick="OnShowModalClick">Usuń</button>
+</p>
+</div>
+<div class="calories-table">
+<button class="mr-7" @onclick="OnShowModalTableClick">Tabela twoich kalorii</button>
+</div>
+@code {
+
+    private Modal modal = default!;
+    private Modal modaltable = default!;
+
+    private async Task OnShowModalClick()
+    {
+        await modal.ShowAsync();
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await modal.HideAsync();
+        await RefreshData();
+    }
+
+    private async Task OnShowModalTableClick()
+    {
+        await modaltable.ShowAsync();
+    }
+
+    private async Task OnHideModalTableClick()
+    {
+        await modaltable.HideAsync();
+        await RefreshData();
+    }
+
+    async Task DeleteCalorieNeeded(UserCaloriesNeeded calorie)
+    {
+        objCaloriesNeeded = calorie;
+        var result = CaloriesNeededService.DeleteCaloriesNeededAsync(calorie);
+
+        caloriesNeeded = await CaloriesNeededService.GetUserCaloriesAsync(UserIdentityName);
+    }
+
+    async Task DeleteCalories(UserCaloriesResult item)
+    {
+        //objUserCaloriesResult = item;
+        var result = await CaloriesService.DeleteCaloriesAsync(item);
+        if (result)
+        {
+            var recordToRemove = userProducts.FirstOrDefault(p => p.Id == item.Id);
+            if (recordToRemove != null)
+            {
+                userProducts.Remove(recordToRemove);
+                GroupUserProducts();
+            }
+            StateHasChanged(); 
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Nie udało się usunąć produktu.");
+        }
+        userProducts = await CaloriesService.GetUserCaloriesAsync(UserIdentityName);
+    }
+
+
+    private ApexChartOptions<UserCaloriesResult> options = new ApexCharts.ApexChartOptions<UserCaloriesResult>();
+    protected override void OnInitialized()
+    {
+        options.Colors = new List<string> { "#4c1130" };
+
+        options.Debug = true;
+
+        options.Xaxis = new XAxis
+            {
+                TickPlacement = TickPlacement.On, 
+                Title = new AxisTitle
+                {
+                    OffsetY = 5,
+                    Text = "Dni",
+                    Style = new AxisTitleStyle { FontSize = "17px", Color = "grey" }
+                },
+                AxisBorder = new AxisBorder
+                {
+                    Height = 2
+                }
+            };
+
+        options.Yaxis = new List<YAxis>();
+        options.Yaxis.Add(new YAxis
+            {
+                Min = 0,
+                DecimalsInFloat = 0,
+                Labels = new YAxisLabels { Rotate = -45, Style = new AxisLabelStyle { FontSize = "10px" } },
+                Title = new AxisTitle { Text = "Wartość", Style = new AxisTitleStyle { FontSize = "17px", Color = "grey" } }
+            });
+    }
+
+    private CalculatorModel Model = new CalculatorModel();
+    private decimal? CaloriesResult;
+    private decimal? BmrResult;
+    public decimal? ProteinGrams { get; set; }
+    public decimal? CarbGrams { get; set; }
+    public decimal? FatGrams { get; set; }
+
+    public class CalculatorModel
+    {
+        [Required]
+        public string Gender { get; set; } = "Male";
+        [Required]
+        [Range(0, 120, ErrorMessage = "Wprowadź prawidłowy wiek.")]
+        public int Age { get; set; }
+        [Required]
+        [Range(0, double.MaxValue, ErrorMessage = "Wprowadź prawidłową wagę.")]
+        public decimal Weight { get; set; }
+        [Required]
+        [Range(0, double.MaxValue, ErrorMessage = "Wprowadź prawidłowy wzrost.")]
+        public decimal Height { get; set; }
+        [Required]
+        public string ActivityLevel { get; set; } = "None";
+    }
+
+    private void CalculateCalories()
+    {
+
+        var bmr = (Model.Gender == "Male")
+            ? (10m * Model.Weight) + (6.25m * Model.Height) - (5m * Model.Age) + 5m
+            : (10m * Model.Weight) + (6.25m * Model.Height) - (5m * Model.Age) - 161m;
+
+        var multiplier = Model.ActivityLevel switch
+        {
+            "None" => 1.2m,
+            "Low" => 1.375m,
+            "Moderate" => 1.55m,
+            "High" => 1.725m,
+            "VeryHigh" => 1.9m,
+            _ => 1.2m,
+        };
+
+        CaloriesResult = Math.Round(bmr * multiplier, 2);
+
+        BmrResult = Math.Round(bmr, 2);
+
+        var caloriesFromProtein = Math.Round(CaloriesResult.Value * 0.3m, 2);
+        var caloriesFromCarbs = Math.Round(CaloriesResult.Value * 0.5m, 2);
+        var caloriesFromFats = Math.Round(CaloriesResult.Value * 0.2m, 2);
+
+        ProteinGrams = Math.Round(caloriesFromProtein / 4m, 2);
+        CarbGrams = Math.Round(caloriesFromCarbs / 4m, 2);
+        FatGrams = Math.Round(caloriesFromFats / 9m, 2);
+    }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationStateTask { get; set; }
+    List<FoodProducts> foodProducts = new List<FoodProducts>();
+    List<UserCaloriesResult> userProducts = new List<UserCaloriesResult>();
+    List<UserCaloriesNeeded> caloriesNeeded = new List<UserCaloriesNeeded>();
+    private string UserIdentityName = "";
+    private Dictionary<DateTime, List<UserCaloriesResult>> groupedUserProducts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (authenticationStateTask != null)
+        {
+            var user = (await authenticationStateTask).User;
+            if (user.Identity != null)
+            {
+                UserIdentityName = user.Identity.Name ?? "";
+            }
+        }
+
+        var products = await CaloriesService.GetUserCaloriesAsync(UserIdentityName);
+        groupedUserProducts = products
+            .Where(c => c.Calories.HasValue)
+            .GroupBy(p => p.NewCaloriesDate.Value.Date)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        var userCaloriesNeeded = await CaloriesNeededService.GetLatestCaloriesNeededAsync(UserIdentityName);
+        var today = DateTime.Now.Date;
+
+
+        if (groupedUserProducts.TryGetValue(today, out var todayCalories))
+        {
+            var todaySum = todayCalories.Sum(c => c.Calories ?? 0);
+
+            if (userCaloriesNeeded != null && todaySum > userCaloriesNeeded.CaloriesNeededResult)
+            {
+                ShowOverLimitMessage = true;
+                OverLimitMessage = $"Uwaga! Dzisiaj przekroczyłeś swoje dzienne zapotrzebowanie kaloryczne o {todaySum - userCaloriesNeeded.CaloriesNeededResult} kcal.";
+            }
+        }
+        caloriesNeeded = await CaloriesNeededService.GetUserCaloriesAsync(UserIdentityName);
+        userProducts = await CaloriesService.GetUserCaloriesAsync(UserIdentityName);
+        foodProducts = await ProductsService.GetFoodProductsAsync();
+        UpdateYAxisBasedOnData();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("refreshPage");
+        }
+    }
+
+    UserCaloriesNeeded objCaloriesNeeded = new UserCaloriesNeeded();
+    UserCaloriesResult objUserCaloriesResult = new UserCaloriesResult();
+
+    public int? SelectedProductId { get; set; }
+    private int? selectedProductId;
+    private decimal amountInGrams;
+    private decimal? productCaloriesResult;
+    private bool ShowOverLimitMessage = false;
+    private string OverLimitMessage = "";
+
+    bool SaveError1 = false;
+    bool SaveError2 = false;
+    bool ShowPopup = false;
+
+    private void UpdateYAxisBasedOnData()
+    {
+        var maxYValue = userProducts.Max(product => product.Calories) ?? 0;
+        var yAxisMax = maxYValue + (maxYValue * 0.1m);
+
+        options.Yaxis.Clear();
+        options.Yaxis.Add(new YAxis
+            {
+                Min = 0,
+                Max = yAxisMax,
+                DecimalsInFloat = 0,
+                Labels = new YAxisLabels { Rotate = -45, Style = new AxisLabelStyle { FontSize = "10px" } },
+                Title = new AxisTitle { Text = "Wartość", Style = new AxisTitleStyle { FontSize = "17px", Color = "grey" } }
+            });
+
+        StateHasChanged();
+    }
+
+    private async Task SaveCaloriesResult()
+    {
+        if (selectedProductId.HasValue && amountInGrams > 0)
+        {
+            var selectedProduct = foodProducts.FirstOrDefault(p => p.Id == selectedProductId.Value);
+            if (selectedProduct != null)
+            {
+                var calories = (selectedProduct.Calories100g / 100m) * amountInGrams;
+
+                var userName = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User.Identity.Name;
+
+                var newCaloriesResult = new UserCaloriesResult
+                    {
+                        NewCaloriesDate = DateTime.Now,
+                        ProductId = selectedProductId.Value,
+                        Calories = calories,
+                        UserName = userName
+                    };
+
+                await CaloriesService.CreateForecastAsync(newCaloriesResult);
+
+                await JSRuntime.InvokeVoidAsync("alert", $"Dodano produkt '{selectedProduct.ProductName}' o wartości kalorycznej {calories} kcal do Twoich danych kalorycznych.");
+            }
+        }
+        await RefreshData();
+    }
+
+    void ClosePopup()
+    {
+        ShowPopup = false;
+        SaveError1 = false;
+        SaveError2 = false;
+    }
+
+    void AddNewCaloriesNeeded()
+    {
+        ShowPopup = true;
+    }
+
+    private HashSet<DateTime> expandedGroups = new HashSet<DateTime>();
+
+    private string GetGroupClass(DateTime date)
+    {
+        return IsGroupExpanded(date) ? "table-calories-data-expanded" : "table-calories-data";
+    }
+
+    private void ToggleGroup(DateTime date)
+    {
+        if (!expandedGroups.Add(date)) 
+        {
+            expandedGroups.Remove(date); 
+        }
+        StateHasChanged();
+    }
+
+    private void GroupUserProducts()
+    {
+        groupedUserProducts = userProducts
+            .GroupBy(p => p.NewCaloriesDate.Value.Date)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        StateHasChanged(); 
+    }
+
+    private bool IsGroupExpanded(DateTime date) => expandedGroups.Contains(date);
+
+    async Task SaveCaloriesNeeded()
+    {
+        var existingData = caloriesNeeded.FirstOrDefault(f => f.CaloriesNeededResult.HasValue);
+
+        if (existingData != null)
+        {
+            SaveError2 = true;
+            return;
+        }
+
+        if (objCaloriesNeeded.CaloriesNeededResult == null)
+        {
+            SaveError1 = true;
+            return;
+        }
+
+        SaveError1 = false;
+        ShowPopup = false;
+
+        if (objCaloriesNeeded.Id == 0)
+        {
+            UserCaloriesNeeded objNewobjCaloriesNeeded = new UserCaloriesNeeded();
+            objNewobjCaloriesNeeded.NewCaloriesDate = System.DateTime.Now;
+            objNewobjCaloriesNeeded.CaloriesNeededResult = objCaloriesNeeded.CaloriesNeededResult;
+            objNewobjCaloriesNeeded.UserName = UserIdentityName;
+
+            var result = CaloriesNeededService.CreateCaloriesNeededAsync(objNewobjCaloriesNeeded);
+        }
+        else
+        {
+            // Tu może być w przyszłości update
+        }
+        caloriesNeeded = await CaloriesNeededService.GetUserCaloriesAsync(UserIdentityName);
+        await RefreshData();
+    }
+
+    async Task RefreshData()
+    {
+        await JSRuntime.InvokeVoidAsync("refreshPage");
+    }
+}

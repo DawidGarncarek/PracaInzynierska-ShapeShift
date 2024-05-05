@@ -1,0 +1,168 @@
+﻿@using BlazorServerApp.Data
+@using BlazorServerAppDB.Data.Weight
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inherits OwningComponentBase<WeightService>
+@inject IJSRuntime JSRuntime
+
+<Modal @ref="modal" Title="Twój aktualny cel">
+    <BodyTemplate>
+        <p class="text-black">
+            <div class="table-wrapper">
+                <table class="fl-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Twój cel</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var weight in weights)
+                        {
+                            if (weight.GoalWeight.HasValue)
+                            {
+                                <tr class="essa">
+                                    <td>@weight.WeightDate?.ToShortDateString()</td>
+                                    <td>@weight.GoalWeight</td>
+                                    <td class="danger-button-table">
+                                        <button class="btn btn-danger"
+                                                @onclick="(() => DeleteWeight(weight))">
+                                            Usuń
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </p>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Danger" @onclick="OnHideModalClick">Zamknij</Button>
+    </FooterTemplate>
+</Modal>
+
+<button class="mr-7" @onclick="OnShowModalClick">Usuń cel</button>
+
+@code {
+    private Modal modal = default!;
+
+    private async Task OnShowModalClick()
+    {
+        await modal.ShowAsync();
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await modal.HideAsync();
+        await RefreshData();
+    }
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationStateTask { get; set; }
+    List<Weight> weights = new List<Weight>();
+    private string UserIdentityName = "";
+    protected override async Task OnInitializedAsync()
+    {
+        if (authenticationStateTask != null)
+        {
+            var user = (await authenticationStateTask).User;
+            if (user.Identity != null)
+            {
+                UserIdentityName = user.Identity.Name ?? "";
+            }
+        }
+        latestWeight = await @Service.GetLatestWeightAsync(UserIdentityName);
+        latestGoalWeight = await @Service.GetLatestGoalWeightAsync(UserIdentityName);
+        weights = await @Service.GetWeightAsync(UserIdentityName);
+    }
+
+    Weight objWeightResult = new Weight();
+
+    private Weight latestWeight;
+    private Weight latestGoalWeight;
+    bool SaveError1 = false;
+    bool SaveError2 = false;
+    bool SaveError3 = false;
+    bool SaveError4 = false;
+
+    async Task SaveWeight()
+    {
+        var today = DateTime.Now.Date;
+        var existingYourWeight = weights.FirstOrDefault(f => f.UserName == UserIdentityName && f.WeightDate?.Date == today);
+
+        if (existingYourWeight != null)
+        {
+            SaveError2 = true;
+            return;
+
+        }
+
+        if (objWeightResult.UserWeight == null)
+        {
+            SaveError1 = true;
+            return;
+        }
+        SaveError1 = false;
+
+        if (objWeightResult.Id == 0)
+        {
+            Weight objNewWeight = new Weight();
+            objNewWeight.WeightDate = System.DateTime.Now;
+            objNewWeight.UserWeight = objWeightResult.UserWeight;
+            objNewWeight.UserName = UserIdentityName;
+
+            var result = @Service.CreateWeightAsync(objNewWeight);
+        }
+        else
+        {
+            // Tu może być w przyszłości update
+        }
+
+        weights = await @Service.GetWeightAsync(UserIdentityName);
+    }
+
+    async Task SaveGoalWeight()
+    {
+        var existingGoalWeight = weights.FirstOrDefault(f => f.GoalWeight.HasValue);
+
+        if (existingGoalWeight != null)
+        {
+            SaveError4 = true;
+            return;
+
+        }
+
+        if (objWeightResult.GoalWeight == null)
+        {
+            SaveError3 = true;
+            return;
+        }
+        SaveError1 = false;
+
+        if (objWeightResult.Id == 0)
+        {
+            Weight objNewWeight = new Weight();
+
+            objNewWeight.GoalWeight = objWeightResult.GoalWeight;
+            objNewWeight.UserName = UserIdentityName;
+
+            var result = @Service.CreateWeightAsync(objNewWeight);
+        }
+
+        weights = await @Service.GetWeightAsync(UserIdentityName);
+    }
+
+    async Task DeleteWeight(Weight weight)
+    {
+        objWeightResult = weight;
+        var result = @Service.DeleteWeightAsync(weight);
+
+        weights = await @Service.GetWeightAsync(UserIdentityName);
+    }
+
+    async Task RefreshData()
+    {
+        await JSRuntime.InvokeVoidAsync("refreshPage");
+    }
+}

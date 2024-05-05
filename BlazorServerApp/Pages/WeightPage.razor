@@ -1,0 +1,344 @@
+﻿@page "/WeightPage"
+@using BlazorServerApp.Data
+@using BlazorServerAppDB.Data.Weight
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject WeightService WeightService
+@inherits OwningComponentBase<WeightService>
+@inject IJSRuntime JSRuntime
+
+<div class="main-weight">
+    <h3 class="text-weight">Twoja Waga</h3>
+    <div class="form-group1">
+        <label for="weight">Aktualna Waga (kg):</label>
+        <input type="number" class="form-control1" @bind="objWeightResult.UserWeight" />
+        <button class="mr-7" @onclick="SaveWeight">Dodaj</button>
+    <div class="form-label">
+        <label for="weight">Cel Waga (kg):</label>
+        <input type="number" class="form-control1" @bind="objWeightResult.GoalWeight" />
+        <button class="mr-7" @onclick="SaveGoalWeight">Dodaj</button>
+    </div>
+        <div class="errors">
+            @if (SaveError1)
+            {
+                <p class="text-5l">
+                    Pole nie może być puste
+                    <button class="close" @onclick="(() => CloseError(SaveErrorType.SaveError1))">X</button>
+                </p>
+            }
+            @if (SaveError2)
+            {
+                <p class="text-5l">
+                    Dzisiejsza waga została już wpisana
+                    <button class="close" @onclick="(() => CloseError(SaveErrorType.SaveError2))">X</button>
+                </p>
+
+            }
+            @if (SaveError3)
+            {
+                <p class="text-5l">
+                    Pole nie może być puste
+                    <button class="close" @onclick="(() => CloseError(SaveErrorType.SaveError3))">X</button>
+                </p>
+            }
+            @if (SaveError4)
+            {
+                <p class="text-5l">
+                    Cel został już ustawiony
+                    <button class="close" @onclick="(() => CloseError(SaveErrorType.SaveError4))">X</button>
+                </p>
+            }
+        </div>
+    </div>
+    <div class="show-weights">
+        @if (latestWeight != null && latestGoalWeight != null)
+        {
+            <div class="weights">
+            <p>Aktualna waga</p>
+            <p>@latestWeight.UserWeight</p>
+                <TableYourWeight></TableYourWeight>
+            </div>
+            <div class="weights">
+            <p>Cel</p>            
+            <p>@latestGoalWeight.GoalWeight</p>
+                <TableGoalWeight></TableGoalWeight>
+            </div>
+        }
+    </div>
+    <div class="chart-container">
+        <div class="apex-chart">
+    <ApexChart TItem="Weight"
+               Title="Twoja Waga"
+               Options="@options">
+
+        <ApexPointSeries TItem="Weight"
+                         Items="weights"
+                         Name="Twoja Waga"
+                         SeriesType="SeriesType.Line"
+                         XValue="@(e => e.WeightDate?.ToShortDateString())"
+                         YAggregate="@(e => e.Sum(e => e.UserWeight))" 
+                         ShowDataLabels/>
+
+    </ApexChart>
+    </div>
+    </div>
+    <div class="table-weight-history">
+         <div class="show-weights">
+             <div class="weights">
+                 <p>Zmiana - ostatnie 7 dni</p>
+                 @if (latestWeight != null && latest7DaysWeight != null && latestWeight.UserWeight.HasValue && latest7DaysWeight.UserWeight.HasValue)
+                {
+                    var weight7Difference = latestWeight.UserWeight.Value - latest7DaysWeight.UserWeight.Value;
+                    var color = weight7Difference > 0 ? "red" : "green";
+                    <p style="color:@color">@(weight7Difference > 0 ? "+" : "")@weight7Difference kg</p>
+                }
+                else
+                {
+                    <p>Brak danych</p>
+                }
+             </div>
+             <div class="weights">
+                  <TableWeight></TableWeight>
+             </div>
+             <div class="weights">
+                <p>Zmiana - ostatnie 30 dni</p>
+                @if (latestWeight != null && latest30DaysWeight != null && latestWeight.UserWeight.HasValue && latest30DaysWeight.UserWeight.HasValue)
+                {
+                    var weight30Difference = latestWeight.UserWeight.Value - latest30DaysWeight.UserWeight.Value;
+                    var color = weight30Difference > 0 ? "red" : "green";
+                    <p style="color:@color">@(weight30Difference > 0 ? "+" : "")@weight30Difference kg</p>
+                }
+                else
+                {
+                    <p>Brak danych</p>
+                }
+            </div>
+         </div>
+    </div>
+</div>
+
+@code {
+
+    private ApexChartOptions<Weight> options = new ApexCharts.ApexChartOptions<Weight>();
+    protected override void OnInitialized()
+    {
+        options.Colors = new List<string> { "#089BCC" };
+
+        options.Debug = true;
+        options.Tooltip = new ApexCharts.Tooltip { X = new TooltipX { Format = @"MMMM \ yyyy" } };
+        options.Tooltip = new ApexCharts.Tooltip
+            {
+                Y = new TooltipY
+                {
+                    Title = new TooltipYTitle { Formatter = @"function(name) { return name + ':' }" },
+                    Formatter = @"function(value, { series, seriesIndex, dataPointIndex, w }) { return  value }"
+                },
+            };
+        options.Xaxis = new XAxis
+            {
+                Title = new AxisTitle
+                {
+                    OffsetY = 5,
+                    Text = "Dni",
+                    Style = new AxisTitleStyle { FontSize = "17px", Color = "grey" }
+                },
+                AxisBorder = new AxisBorder
+                {
+                    Height = 2
+                }
+            };
+        options.Yaxis = new List<YAxis>();
+        options.Yaxis.Add(new YAxis
+            {
+                DecimalsInFloat = 0,
+                Labels = new YAxisLabels { Rotate = -45, Style = new AxisLabelStyle { FontSize = "10px" } },
+                Title = new AxisTitle { Text = "Wartość", Style = new AxisTitleStyle { FontSize = "17px", Color = "grey" } }
+            });
+
+        options.Annotations = new Annotations { Yaxis = new List<AnnotationsYAxis>() };
+
+        base.OnInitialized();
+
+        Task.Run(async () =>
+        {
+            var latestGoalWeight = await WeightService.GetLatestGoalWeightAsync(UserIdentityName);
+
+            if (latestGoalWeight != null && latestGoalWeight.GoalWeight.HasValue)
+            {
+                InvokeAsync(() =>
+            {
+                options.Annotations.Yaxis.Add(new AnnotationsYAxis
+                   {
+                       Y = latestGoalWeight.GoalWeight.Value,
+                       BorderWidth = 4,
+                       StrokeDashArray = 0,
+                       BorderColor = "red",
+                       Label = new Label { Text = "Cel" }
+                   });
+            });
+            }
+        });
+        StateHasChanged();
+    }
+
+    public enum SaveErrorType
+    {
+        None,
+        SaveError1,
+        SaveError2,
+        SaveError3,
+        SaveError4
+    }
+
+    void CloseError(SaveErrorType errorType)
+    {
+        switch (errorType)
+        {
+            case SaveErrorType.SaveError1:
+                SaveError1 = false;
+                break;
+            case SaveErrorType.SaveError2:
+                SaveError2 = false;
+                break;
+            case SaveErrorType.SaveError3:
+                SaveError3 = false;
+                break;
+            case SaveErrorType.SaveError4:
+                SaveError4 = false;
+                break;
+        }
+    }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationStateTask { get; set; }
+    List<Weight> weights = new List<Weight>();
+    private string UserIdentityName = "";
+    protected override async Task OnInitializedAsync()
+    {
+        if (authenticationStateTask != null)
+        {
+            var user = (await authenticationStateTask).User;
+            if (user.Identity != null)
+            {
+                UserIdentityName = user.Identity.Name ?? "";
+            }
+        }
+        latestWeight = await @Service.GetLatestWeightAsync(UserIdentityName);
+        latestGoalWeight = await @Service.GetLatestGoalWeightAsync(UserIdentityName);
+        latest7DaysWeight = await @Service.GetWeightFrom7DaysAgoAsync(UserIdentityName);
+        latest30DaysWeight = await @Service.GetWeightFrom30DaysAgoAsync(UserIdentityName);
+        weights = await @Service.GetWeightAsync(UserIdentityName);
+        UpdateYAxisBasedOnData();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("refreshPage");
+        }
+    }
+
+    Weight objWeightResult = new Weight();
+
+    private Weight latestWeight;
+    private Weight latestGoalWeight;
+    private Weight latest7DaysWeight;
+    private Weight latest30DaysWeight;
+    bool SaveError1 = false;
+    bool SaveError2 = false;
+    bool SaveError3 = false;
+    bool SaveError4 = false;
+
+    private void UpdateYAxisBasedOnData()
+    {
+        var maxYValue = weights.Max(product => product.UserWeight) ?? 0;
+        var yAxisMax = maxYValue + (maxYValue * 0.1m);
+
+        options.Yaxis.Clear();
+        options.Yaxis.Add(new YAxis
+            {
+                Min = 40,
+                Max = yAxisMax,
+                DecimalsInFloat = 0,
+                Labels = new YAxisLabels { Rotate = -45, Style = new AxisLabelStyle { FontSize = "10px" } },
+                Title = new AxisTitle { Text = "Wartość", Style = new AxisTitleStyle { FontSize = "17px", Color = "grey" } }
+            });
+
+        StateHasChanged();
+    }
+
+    async Task SaveWeight()
+    {
+        var today = DateTime.Now.Date;
+        var existingYourWeight = weights.FirstOrDefault(f => f.UserName == UserIdentityName && f.WeightDate?.Date == today);
+
+        if (existingYourWeight != null)
+        {
+            SaveError2 = true;
+            return;
+
+        }
+
+        if (objWeightResult.UserWeight == null)
+        {
+            SaveError1 = true;
+            return;
+        }
+        SaveError1 = false;
+
+        if (objWeightResult.Id == 0)
+        {
+            Weight objNewWeight = new Weight();
+            objNewWeight.WeightDate = System.DateTime.Now;
+            objNewWeight.UserWeight = objWeightResult.UserWeight;
+            objNewWeight.UserName = UserIdentityName;
+
+            var result = @Service.CreateWeightAsync(objNewWeight);
+        }
+        else
+        {
+            // Tu może być w przyszłości update
+        }
+
+        weights = await @Service.GetWeightAsync(UserIdentityName);
+        RefreshData();
+    }
+
+     async Task SaveGoalWeight()
+     {
+        var existingGoalWeight = weights.FirstOrDefault(f => f.GoalWeight.HasValue);
+
+        if (existingGoalWeight != null)
+        {
+            SaveError4 = true;
+            return;
+
+        }
+
+        if (objWeightResult.GoalWeight == null)
+        {
+            SaveError3 = true;
+            return;
+        }
+        SaveError1 = false;
+
+        if (objWeightResult.Id == 0)
+        {
+            Weight objNewWeight = new Weight();
+
+            objNewWeight.WeightDate = System.DateTime.Now;
+            objNewWeight.GoalWeight = objWeightResult.GoalWeight;
+            objNewWeight.UserName = UserIdentityName;
+
+            var result = @Service.CreateWeightAsync(objNewWeight);
+         }
+
+         weights = await @Service.GetWeightAsync(UserIdentityName);
+        RefreshData();
+     }
+
+    async Task RefreshData()
+    {
+        await JSRuntime.InvokeVoidAsync("refreshPage");
+    }
+}

@@ -1,0 +1,62 @@
+﻿@using BlazorServerApp.Data
+@using BlazorServerAppDB.Data.Chat
+@using System.ComponentModel.DataAnnotations
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ChatService ChatService
+
+<div class="home-chat">
+    <h3 class="home-banner-heading2">Chat</h3>
+    <AuthorizeView>
+        <Authorized>
+    <input type="text" @bind="userMessage" class="feedback-input-chat" placeholder="Wpisz wiadomość..." />
+        <button class="home-banner-button2" @onclick="SendMessage">Wyślij</button>
+    <div class="user-message">
+    <ul>
+        @foreach (var message in messages)
+        {
+            <div>
+                <div class="user-name-and-date">
+                    <strong class="message-username">@message.UserName</strong>
+                    <span class="message-date">@message.Date?.ToShortDateString()</span>
+                </div>
+                <div class="user-text-message">
+                    @message.MessageText
+                </div>
+            </div>
+        }
+    </ul>
+    </div>
+        </Authorized>
+        <NotAuthorized>
+            <p>Musisz być zalogowany by korzystać z naszego czatu</p>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
+
+@code {
+
+    private string userMessage;
+    private string userName;
+    private List<UserChatMessages> messages = new List<UserChatMessages>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        messages = await ChatService.GetMessagesAsync();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity.IsAuthenticated)
+        {
+            userName = user.Identity.Name;  
+        }
+    }
+
+    private async Task SendMessage()
+    {
+        if (!string.IsNullOrEmpty(userMessage) && !string.IsNullOrEmpty(userName))
+        {
+            await ChatService.SendMessageAsync(userMessage, userName);
+            messages = await ChatService.GetMessagesAsync();  
+            userMessage = string.Empty;  
+        }
+    }
+}
