@@ -101,37 +101,37 @@ namespace BlazorServerApp.Data
                             .Include(ua => ua.ChosenAnswer)
                             .ToListAsync();
 
-            string dietGoals = userAnswers
+            string? dietGoals = userAnswers
                 .Where(ua => ua.Question.Category == "Goals")
                 .Select(ua => MapDietGoals(ua.ChosenAnswer.AnswerText))
                 .FirstOrDefault();
 
-            string allergies = userAnswers
+            string? allergies = userAnswers
                 .Where(ua => ua.Question.Category == "Allergy")
                 .Select(ua => MapAllergies(ua.ChosenAnswer.AnswerText))
                 .FirstOrDefault();
 
-            string dietType = userAnswers
+            string? dietType = userAnswers
                 .Where(ua => ua.Question.Category == "Type")
                 .Select(ua => MapDietType(ua.ChosenAnswer.AnswerText))
                 .FirstOrDefault();
 
-            string foodType = userAnswers
+            string? foodType = userAnswers
                 .Where(ua => ua.Question.Category == "Food Type")
                 .Select(ua => MapFoodType(ua.ChosenAnswer.AnswerText))
                 .FirstOrDefault();
 
-            string productType = userAnswers
+            string? productType = userAnswers
                 .Where(ua => ua.Question.Category == "Product Type")
                 .Select(ua => MapProductType(ua.ChosenAnswer.AnswerText))
                 .FirstOrDefault();
 
-            string regionTypeFood = userAnswers
+            string? regionTypeFood = userAnswers
                 .Where(ua => ua.Question.Category == "Region Type Food")
                 .Select(ua => MapRegionTypeFood(ua.ChosenAnswer.AnswerText))
                 .FirstOrDefault();
 
-            string excludedProducts = userAnswers
+            string? excludedProducts = userAnswers
                 .Where(ua => ua.Question.Category == "Excluded Products")
                 .Select(ua => MapExcludedProducts(ua.ChosenAnswer.AnswerText))
                 .FirstOrDefault();
