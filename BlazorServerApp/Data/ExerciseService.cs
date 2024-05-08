@@ -81,22 +81,22 @@ namespace BlazorServerApp.Data
                             .Include(ua => ua.ChosenAnswer)
                             .ToListAsync();
 
-            string exerciseGoal = userAnswers
+            string? exerciseGoal = userAnswers
                 .Where(ua => ua.Question.Category == "Goals")
                 .Select(ua => MapAnswerToExerciseGoal(ua.ChosenAnswer.AnswerText))
                 .FirstOrDefault();
 
-            string exerciseDifficulty = userAnswers
+            string? exerciseDifficulty = userAnswers
                 .Where(ua => ua.Question.Category == "DifficultyLevel")
                 .Select(ua => MapDifficultyLevelToExerciseDifficulty(ua.ChosenAnswer.AnswerText))
                 .FirstOrDefault();
 
-            string exerciseIntensity = userAnswers
+            string? exerciseIntensity = userAnswers
                 .Where(ua => ua.Question.Category == "IntensityLevel")
                 .Select(ua => MapIntensityToExerciseIntensity(ua.ChosenAnswer.AnswerText))
                 .FirstOrDefault();
 
-            string exerciseLocation = userAnswers
+            string? exerciseLocation = userAnswers
                 .Where(ua => ua.Question.Category == "Location")
                 .Select(ua => MapLocationToExerciseLocation(ua.ChosenAnswer.AnswerText))
                 .FirstOrDefault();
