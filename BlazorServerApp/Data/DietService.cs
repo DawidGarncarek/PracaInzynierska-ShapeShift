@@ -147,7 +147,7 @@ namespace BlazorServerApp.Data
                 .ToListAsync();
 
             int? caloricRequirement = await GetUserCaloricRequirement(strCurrentUser);
-
+            
             Random rng = new Random();
             int mealDays = 7;  
             List<Meals> userMealSets = new List<Meals>();
@@ -160,9 +160,9 @@ namespace BlazorServerApp.Data
                 var possibleLunches = shuffledMeals.Where(m => m.MealType == "Lunch").ToList();
                 var possibleDinners = shuffledMeals.Where(m => m.MealType == "Dinner").ToList();
 
-                Meals breakfast = null;
-                Meals lunch = null;
-                Meals dinner = null;
+                Meals? breakfast = null;
+                Meals? lunch = null;
+                Meals? dinner = null;
 
                 foreach (var b in possibleBreakfasts)
                 {
